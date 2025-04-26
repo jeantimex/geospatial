@@ -11,12 +11,8 @@ import {
 import {
   Group,
   HalfFloatType,
-  Mesh,
-  MeshBasicMaterial,
-  NoToneMapping,
   PerspectiveCamera,
   Scene,
-  TorusKnotGeometry,
   Vector3,
   WebGLRenderer,
 } from 'three'
