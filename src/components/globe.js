@@ -37,7 +37,6 @@ export class Globe {
     );
   
     this.tiles.group.rotation.x = -Math.PI / 2;
-    this.scene.add(this.tiles.group);
   
     this.tiles.setResolutionFromRenderer(this.camera, this.renderer);
     this.tiles.setCamera(this.camera);
@@ -56,6 +55,7 @@ export class Globe {
     this.controls.update();
 
     // update options
+    this.camera.updateMatrixWorld();
     this.tiles.setResolutionFromRenderer(this.camera, this.renderer);
     this.tiles.setCamera(this.camera);
 

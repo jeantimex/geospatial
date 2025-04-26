@@ -28,7 +28,9 @@ function init() {
   camera.position.set(4800000, 2570000, 14720000);
   camera.lookAt(0, 0, 0);
 
+  // Create the globe
   globe = new Globe(scene, camera, renderer);
+  scene.add(globe.tiles.group);
 
   window.addEventListener("resize", onWindowResize);
   onWindowResize();
