@@ -146,22 +146,22 @@ function init() {
   )
 
   // Load precomputed textures.
-  new PrecomputedTexturesLoader().load('atmosphere', onPrecomputedTexturesLoad)
+  new PrecomputedTexturesLoader().load('/assets/atmosphere', onPrecomputedTexturesLoad)
 
   // Load textures for the clouds.
-  new TextureLoader().load('clouds/local_weather.png', onLocalWeatherLoad)
+  new TextureLoader().load('/assets/clouds/local_weather.png', onLocalWeatherLoad)
   new (createData3DTextureLoaderClass(parseUint8Array, {
     width: CLOUD_SHAPE_TEXTURE_SIZE,
     height: CLOUD_SHAPE_TEXTURE_SIZE,
     depth: CLOUD_SHAPE_TEXTURE_SIZE
-  }))().load('clouds/shape.bin', onShapeLoad)
+  }))().load('/assets/clouds/shape.bin', onShapeLoad)
   new (createData3DTextureLoaderClass(parseUint8Array, {
     width: CLOUD_SHAPE_DETAIL_TEXTURE_SIZE,
     height: CLOUD_SHAPE_DETAIL_TEXTURE_SIZE,
     depth: CLOUD_SHAPE_DETAIL_TEXTURE_SIZE
-  }))().load('clouds/shape_detail.bin', onShapeDetailLoad)
-  new TextureLoader().load('clouds/turbulence.png', onTurbulenceLoad)
-  new STBNLoader().load('core/stbn.bin', onSTBNLoad)
+  }))().load('/assets/clouds/shape_detail.bin', onShapeDetailLoad)
+  new TextureLoader().load('/assets/clouds/turbulence.png', onTurbulenceLoad)
+  new STBNLoader().load('/assets/core/stbn.bin', onSTBNLoad)
 
   container.appendChild(renderer.domElement)
   window.addEventListener('resize', onWindowResize)
@@ -247,3 +247,5 @@ function render() {
   controls.update()
   composer.render()
 }
+
+window.addEventListener('load', init);
