@@ -11,17 +11,11 @@ import {
 import {
   Group,
   HalfFloatType,
-  LinearFilter,
-  LinearMipMapLinearFilter,
   Mesh,
   MeshBasicMaterial,
-  NoColorSpace,
   NoToneMapping,
   PerspectiveCamera,
-  RedFormat,
-  RepeatWrapping,
   Scene,
-  TextureLoader,
   TorusKnotGeometry,
   Vector3,
   WebGLRenderer,
@@ -35,15 +29,8 @@ import {
   PrecomputedTexturesLoader,
 } from '@takram/three-atmosphere'
 import {
-  CLOUD_SHAPE_DETAIL_TEXTURE_SIZE,
-  CLOUD_SHAPE_TEXTURE_SIZE,
-  CloudsEffect,
-} from '@takram/three-clouds'
-import {
-  createData3DTextureLoaderClass,
   Ellipsoid,
   Geodetic,
-  parseUint8Array,
   radians,
   STBNLoader
 } from '@takram/three-geospatial'
@@ -57,7 +44,6 @@ let camera
 let controls
 let scene
 let aerialPerspective
-let clouds
 let composer
 
 const date = new Date('2000-06-01T10:00:00Z')
@@ -89,14 +75,6 @@ function init() {
   )
   scene.add(group)
 
-  const torusKnotGeometry = new TorusKnotGeometry(200, 60, 256, 64)
-  torusKnotGeometry.computeVertexNormals()
-  const torusKnot = new Mesh(
-    torusKnotGeometry,
-    new MeshBasicMaterial({ color: 'white' })
-  )
-  group.add(torusKnot)
-
   // Demonstrates deferred lighting here.
   aerialPerspective = new AerialPerspectiveEffect(camera)
   aerialPerspective.sky = true
@@ -108,16 +86,10 @@ function init() {
   const normalPass = new NormalPass(scene, camera)
   aerialPerspective.normalBuffer = normalPass.texture
 
-  clouds = new CloudsEffect(camera)
-  clouds.coverage = 0.4
-  clouds.localWeatherVelocity.set(0.001, 0)
-  clouds.events.addEventListener('change', onCloudsChange)
-
   // Define the direction to the sun.
   const sunDirection = new Vector3()
   getSunDirectionECEF(date, sunDirection)
   aerialPerspective.sunDirection.copy(sunDirection)
-  clouds.sunDirection.copy(sunDirection)
 
   renderer = new WebGLRenderer({
     depth: false,
@@ -135,7 +107,7 @@ function init() {
   })
   composer.addPass(new RenderPass(scene, camera))
   composer.addPass(normalPass)
-  composer.addPass(new EffectPass(camera, clouds, aerialPerspective))
+  composer.addPass(new EffectPass(camera, aerialPerspective))
   composer.addPass(
     new EffectPass(
       camera,
@@ -148,93 +120,22 @@ function init() {
   // Load precomputed textures.
   new PrecomputedTexturesLoader().load('/assets/atmosphere', onPrecomputedTexturesLoad)
 
-  // Load textures for the clouds.
-  new TextureLoader().load('/assets/clouds/local_weather.png', onLocalWeatherLoad)
-  new (createData3DTextureLoaderClass(parseUint8Array, {
-    width: CLOUD_SHAPE_TEXTURE_SIZE,
-    height: CLOUD_SHAPE_TEXTURE_SIZE,
-    depth: CLOUD_SHAPE_TEXTURE_SIZE
-  }))().load('/assets/clouds/shape.bin', onShapeLoad)
-  new (createData3DTextureLoaderClass(parseUint8Array, {
-    width: CLOUD_SHAPE_DETAIL_TEXTURE_SIZE,
-    height: CLOUD_SHAPE_DETAIL_TEXTURE_SIZE,
-    depth: CLOUD_SHAPE_DETAIL_TEXTURE_SIZE
-  }))().load('/assets/clouds/shape_detail.bin', onShapeDetailLoad)
-  new TextureLoader().load('/assets/clouds/turbulence.png', onTurbulenceLoad)
+  // Load textures for the atmosphere.
   new STBNLoader().load('/assets/core/stbn.bin', onSTBNLoad)
 
   container.appendChild(renderer.domElement)
   window.addEventListener('resize', onWindowResize)
 }
 
-function onCloudsChange(event) {
-  switch (event.property) {
-    case 'atmosphereOverlay':
-      aerialPerspective.overlay = clouds.atmosphereOverlay
-      break
-    case 'atmosphereShadow':
-      aerialPerspective.shadow = clouds.atmosphereShadow
-      break
-    case 'atmosphereShadowLength':
-      aerialPerspective.shadowLength = clouds.atmosphereShadowLength
-      break
-  }
-}
-
 function onPrecomputedTexturesLoad(textures) {
   Object.assign(aerialPerspective, textures)
-  Object.assign(clouds, textures)
 
   renderer.setAnimationLoop(render)
 }
 
-function onLocalWeatherLoad(texture) {
-  texture.minFilter = LinearMipMapLinearFilter
-  texture.magFilter = LinearFilter
-  texture.wrapS = RepeatWrapping
-  texture.wrapT = RepeatWrapping
-  texture.colorSpace = NoColorSpace
-  texture.needsUpdate = true
-  clouds.localWeatherTexture = texture
-}
-
-function onShapeLoad(texture) {
-  texture.format = RedFormat
-  texture.minFilter = LinearFilter
-  texture.magFilter = LinearFilter
-  texture.wrapS = RepeatWrapping
-  texture.wrapT = RepeatWrapping
-  texture.wrapR = RepeatWrapping
-  texture.colorSpace = NoColorSpace
-  texture.needsUpdate = true
-  clouds.shapeTexture = texture
-}
-
-function onShapeDetailLoad(texture) {
-  texture.format = RedFormat
-  texture.minFilter = LinearFilter
-  texture.magFilter = LinearFilter
-  texture.wrapS = RepeatWrapping
-  texture.wrapT = RepeatWrapping
-  texture.wrapR = RepeatWrapping
-  texture.colorSpace = NoColorSpace
-  texture.needsUpdate = true
-  clouds.shapeDetailTexture = texture
-}
-
-function onTurbulenceLoad(texture) {
-  texture.minFilter = LinearMipMapLinearFilter
-  texture.magFilter = LinearFilter
-  texture.wrapS = RepeatWrapping
-  texture.wrapT = RepeatWrapping
-  texture.colorSpace = NoColorSpace
-  texture.needsUpdate = true
-  clouds.turbulenceTexture = texture
-}
-
 function onSTBNLoad(texture) {
   aerialPerspective.stbnTexture = texture
-  clouds.stbnTexture = texture
+  texture.needsUpdate = true
 }
 
 function onWindowResize() {

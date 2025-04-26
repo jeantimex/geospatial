@@ -1,4 +1,4 @@
-import './styles.css'; // Import the CSS file
+import '../styles.css'; // Import the CSS file
 
 import {
   EffectComposer,
