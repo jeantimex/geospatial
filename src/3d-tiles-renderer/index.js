@@ -1,9 +1,6 @@
 import './styles.css'; // Import the CSS file
 
 import {
-  WGS84_ELLIPSOID,
-  CAMERA_FRAME,
-  GeoUtils,
   GlobeControls,
   CameraTransitionManager,
   TilesRenderer,
@@ -21,81 +18,21 @@ import {
   Scene,
   WebGLRenderer,
   PerspectiveCamera,
-  MathUtils,
   OrthographicCamera,
 } from "three";
 import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader.js";
-import { GUI } from "three/examples/jsm/libs/lil-gui.module.min.js";
-import Stats from "three/examples/jsm/libs/stats.module.js";
 
 let controls, scene, renderer, tiles, transition;
-let statsContainer, stats;
 
 const params = {
   orthographic: false,
 
   enableCacheDisplay: false,
-  enableRendererStats: false,
-  useBatchedMesh: Boolean(
-    new URLSearchParams(window.location.hash.replace(/^#/, "")).get("batched")
-  ),
   errorTarget: 40,
-
-  latitude: 0,
-  longitude: 0,
-  altitude: 9000000,
-  autoUpdate: true,
-  goToLocation: () => {
-    const { latitude, longitude, altitude } = params;
-    
-    // Create a new URL with the updated parameters
-    const urlParams = new URLSearchParams();
-    urlParams.set("lat", latitude.toFixed(4));
-    urlParams.set("lon", longitude.toFixed(4));
-    urlParams.set("height", altitude.toFixed(2));
-    
-    // Preserve other parameters
-    if (params.useBatchedMesh) {
-      urlParams.set("batched", 1);
-    }
-    
-    // Update the hash without triggering the hashchange event
-    window.history.replaceState(undefined, undefined, `#${urlParams}`);
-    
-    // Manually call initFromHash to update the camera position
-    initFromHash();
-  },
-
-  reload: reinstantiateTiles,
 };
 
 init();
 animate();
-
-// Set initial location in URL if not already set
-(function setInitialLocation() {
-  const hash = window.location.hash.replace(/^#/, "");
-  const urlParams = new URLSearchParams(hash);
-  
-  // Only set default location if lat and lon are not already in the URL
-  if (!urlParams.has("lat") && !urlParams.has("lon")) {
-    // Use the default values from params
-    urlParams.set("lat", params.latitude.toFixed(4));
-    urlParams.set("lon", params.longitude.toFixed(4));
-    urlParams.set("height", params.altitude.toFixed(2));
-    
-    // Preserve other parameters
-    if (params.useBatchedMesh) {
-      urlParams.set("batched", 1);
-    }
-    
-    // Update the URL hash
-    window.history.replaceState(undefined, undefined, `#${urlParams}`);
-    
-    // Call initFromHash to position the camera
-    initFromHash();
-  }
-})();
 
 function reinstantiateTiles() {
   if (tiles) {
@@ -187,48 +124,6 @@ function init() {
 
   onWindowResize();
   window.addEventListener("resize", onWindowResize, false);
-  window.addEventListener("hashchange", initFromHash);
-
-  // GUI
-  const gui = new GUI();
-  gui.width = 300;
-
-  gui.add(params, "orthographic").onChange((v) => {
-    controls.getPivotPoint(transition.fixedPoint);
-
-    // don't update the cameras if they are already being animated
-    if (!transition.animating) {
-      // sync the camera positions and then adjust the camera views
-      transition.syncCameras();
-      controls.adjustCamera(transition.perspectiveCamera);
-      controls.adjustCamera(transition.orthographicCamera);
-    }
-
-    transition.toggle();
-  });
-
-  const mapsOptions = gui.addFolder("Google Photorealistic Tiles");
-  mapsOptions.add(params, "useBatchedMesh").listen();
-  mapsOptions.add(params, "reload");
-
-  const exampleOptions = gui.addFolder("Example Options");
-  exampleOptions.add(params, "enableCacheDisplay");
-  exampleOptions.add(params, "enableRendererStats");
-  exampleOptions.add(params, "errorTarget", 5, 100, 1).onChange(() => {
-    tiles.getPluginByName("UPDATE_ON_CHANGE_PLUGIN").needsUpdate = true;
-  });
-
-  statsContainer = document.createElement("div");
-  document.getElementById("info").appendChild(statsContainer);
-
-  // Stats
-  stats = new Stats();
-  stats.showPanel(0);
-  document.body.appendChild(stats.dom);
-
-  // run hash functions
-  initFromHash();
-  setInterval(updateHash, 100);
 }
 
 function onWindowResize() {
@@ -244,121 +139,6 @@ function onWindowResize() {
 
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.setPixelRatio(window.devicePixelRatio);
-}
-
-function updateHash() {
-  if (!tiles) {
-    return;
-  }
-
-  const camera = transition.camera;
-  const cartographicResult = {};
-  const orientationResult = {};
-  const tilesMatInv = tiles.group.matrixWorld.clone().invert();
-  const localCameraPos = camera.position.clone().applyMatrix4(tilesMatInv);
-  const localCameraMat = camera.matrixWorld.clone().premultiply(tilesMatInv);
-
-  // get the data
-  WGS84_ELLIPSOID.getPositionToCartographic(localCameraPos, cartographicResult);
-  WGS84_ELLIPSOID.getAzElRollFromRotationMatrix(
-    cartographicResult.lat,
-    cartographicResult.lon,
-    localCameraMat,
-    orientationResult,
-    CAMERA_FRAME
-  );
-
-  // convert to DEG
-  orientationResult.azimuth *= MathUtils.RAD2DEG;
-  orientationResult.elevation *= MathUtils.RAD2DEG;
-  orientationResult.roll *= MathUtils.RAD2DEG;
-  cartographicResult.lat *= MathUtils.RAD2DEG;
-  cartographicResult.lon *= MathUtils.RAD2DEG;
-
-  // update hash
-  const urlParams = new URLSearchParams();
-  urlParams.set("lat", cartographicResult.lat.toFixed(4));
-  urlParams.set("lon", cartographicResult.lon.toFixed(4));
-  urlParams.set("height", cartographicResult.height.toFixed(2));
-  urlParams.set("az", orientationResult.azimuth.toFixed(2));
-  urlParams.set("el", orientationResult.elevation.toFixed(2));
-  urlParams.set("roll", orientationResult.roll.toFixed(2));
-
-  if (params.useBatchedMesh) {
-    urlParams.set("batched", 1);
-  }
-  window.history.replaceState(undefined, undefined, `#${urlParams}`);
-}
-
-function initFromHash() {
-  const hash = window.location.hash.replace(/^#/, "");
-  const urlParams = new URLSearchParams(hash);
-  if (urlParams.has("batched")) {
-    params.useBatchedMesh = Boolean(urlParams.get("batched"));
-  }
-
-  if (!urlParams.has("lat") && !urlParams.has("lon")) {
-    return;
-  }
-
-  // update the tiles matrix world so we can use it
-  tiles.group.updateMatrixWorld();
-
-  // get the position fields
-  const camera = transition.camera;
-  const lat = parseFloat(urlParams.get("lat"));
-  const lon = parseFloat(urlParams.get("lon"));
-  const height = parseFloat(urlParams.get("height")) || 1000;
-  
-  // Update the params to reflect the current position
-  params.latitude = lat;
-  params.longitude = lon;
-  params.altitude = height;
-
-  if (urlParams.has("az") && urlParams.has("el")) {
-    // get the az el fields for rotation if present
-    const az = parseFloat(urlParams.get("az"));
-    const el = parseFloat(urlParams.get("el"));
-    const roll = parseFloat(urlParams.get("roll")) || 0;
-
-    // extract the east-north-up frame into matrix world
-    WGS84_ELLIPSOID.getRotationMatrixFromAzElRoll(
-      lat * MathUtils.DEG2RAD,
-      lon * MathUtils.DEG2RAD,
-      az * MathUtils.DEG2RAD,
-      el * MathUtils.DEG2RAD,
-      roll * MathUtils.DEG2RAD,
-      camera.matrixWorld,
-      CAMERA_FRAME
-    );
-
-    // apply the necessary tiles transform
-    camera.matrixWorld.premultiply(tiles.group.matrixWorld);
-    camera.matrixWorld.decompose(
-      camera.position,
-      camera.quaternion,
-      camera.scale
-    );
-
-    // get the height
-    WGS84_ELLIPSOID.getCartographicToPosition(
-      lat * MathUtils.DEG2RAD,
-      lon * MathUtils.DEG2RAD,
-      height,
-      camera.position
-    );
-    camera.position.applyMatrix4(tiles.group.matrixWorld);
-  } else {
-    // default to looking down if no az el are present
-    WGS84_ELLIPSOID.getCartographicToPosition(
-      lat * MathUtils.DEG2RAD,
-      lon * MathUtils.DEG2RAD,
-      height,
-      camera.position
-    );
-    camera.position.applyMatrix4(tiles.group.matrixWorld);
-    camera.lookAt(0, 0, 0);
-  }
 }
 
 function animate() {
@@ -381,59 +161,4 @@ function animate() {
   tiles.update();
 
   renderer.render(scene, camera);
-  stats.update();
-
-  updateHtml();
-}
-
-function updateHtml() {
-  // render html text updates
-  let str = "";
-
-  if (params.enableCacheDisplay) {
-    const lruCache = tiles.lruCache;
-    const cacheFullness = lruCache.cachedBytes / lruCache.maxBytesSize;
-    str += `Downloading: ${tiles.stats.downloading} Parsing: ${tiles.stats.parsing} Visible: ${tiles.visibleTiles.size}<br/>`;
-    str += `Cache: ${(100 * cacheFullness).toFixed(2)}% ~${(
-      lruCache.cachedBytes /
-      1000 /
-      1000
-    ).toFixed(2)}mb<br/>`;
-  }
-
-  if (params.enableRendererStats) {
-    const memory = renderer.info.memory;
-    const render = renderer.info.render;
-    const programCount = renderer.info.programs.length;
-    str += `Geometries: ${memory.geometries} Textures: ${memory.textures} Programs: ${programCount} Draw Calls: ${render.calls}`;
-
-    const batchPlugin = tiles.getPluginByName("BATCHED_TILES_PLUGIN");
-    const fadePlugin = tiles.getPluginByName("FADE_TILES_PLUGIN");
-    if (batchPlugin) {
-      let tot = 0;
-      batchPlugin.batchedMesh?._instanceInfo.forEach((info) => {
-        if (info.visible && info.active) tot++;
-      });
-
-      fadePlugin.batchedMesh?._instanceInfo.forEach((info) => {
-        if (info.visible && info.active) tot++;
-      });
-
-      str += ", Batched: " + tot;
-    }
-  }
-
-  if (statsContainer.innerHTML !== str) {
-    statsContainer.innerHTML = str;
-  }
-
-  const mat = tiles.group.matrixWorld.clone().invert();
-  const vec = transition.camera.position.clone().applyMatrix4(mat);
-
-  const res = {};
-  WGS84_ELLIPSOID.getPositionToCartographic(vec, res);
-
-  const attributions = tiles.getAttributions()[0]?.value || "";
-  document.getElementById("credits").innerText =
-    GeoUtils.toLatLonString(res.lat, res.lon) + "\n" + attributions;
 }
