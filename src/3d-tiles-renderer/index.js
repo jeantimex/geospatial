@@ -1,4 +1,4 @@
-import './styles.css'; // Import the CSS file
+import '../styles.css'; // Import the CSS file
 
 import {
   Scene,
@@ -19,7 +19,8 @@ function init() {
     depth: true,
     logarithmicDepthBuffer: true,
   });
-  document.body.appendChild(renderer.domElement);
+  const container = document.getElementById('container')
+  container.appendChild(renderer.domElement);
 
   // camera
   const aspect = window.innerWidth / window.innerHeight
