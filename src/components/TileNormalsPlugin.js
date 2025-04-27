@@ -35,36 +35,48 @@ export class TileNormalsPlugin {
       }
     });
 
-    // Process each mesh
-    for (const mesh of meshes) {
+    // Process each mesh asynchronously
+    const promises = meshes.map(mesh => {
       if (this.options.smoothNormals) {
-        this.computeSmoothNormals(mesh.geometry);
+        return this.computeSmoothNormalsAsync(mesh.geometry);
       }
-    }
+      return Promise.resolve();
+    });
+
+    await Promise.all(promises);
   }
 
   /**
-   * Compute smooth normals for a geometry
-   * This is a simplified version that averages normals of connected vertices
+   * Compute smooth normals for a geometry asynchronously using RequestAnimationFrame
+   * This prevents blocking the main thread for large geometries
    * 
    * @param {BufferGeometry} geometry - The geometry to process
+   * @returns {Promise<void>}
    */
-  computeSmoothNormals(geometry) {
-    // Make sure the geometry has normals
-    if (!geometry.attributes.normal) {
-      geometry.computeVertexNormals();
-      return;
-    }
+  computeSmoothNormalsAsync(geometry) {
+    return new Promise(resolve => {
+      // Use RequestAnimationFrame to schedule the work in an idle frame
+      requestAnimationFrame(() => {
+        // Make sure the geometry has normals
+        if (!geometry.attributes.normal) {
+          geometry.computeVertexNormals();
+          resolve();
+          return;
+        }
 
-    // For a more sophisticated implementation, we would:
-    // 1. Identify vertices that should be creased based on the angle between faces
-    // 2. Average normals for non-creased vertices
-    // 3. Keep original normals for creased vertices
-    
-    // This is a simple implementation that just ensures normals are computed
-    // A full implementation would require more complex geometry processing
-    
-    // Ensure normals are updated
-    geometry.attributes.normal.needsUpdate = true;
+        // For more complex geometries, we could split the work across multiple frames
+        // by processing chunks of vertices in each frame
+        
+        // This is where we would implement a more sophisticated normal computation:
+        // 1. Identify vertices that should be creased based on the angle between faces
+        // 2. Average normals for non-creased vertices
+        // 3. Keep original normals for creased vertices
+        
+        // For now, we'll just ensure normals are computed and updated
+        geometry.attributes.normal.needsUpdate = true;
+        
+        resolve();
+      });
+    });
   }
 }
