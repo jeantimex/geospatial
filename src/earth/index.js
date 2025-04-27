@@ -5,20 +5,16 @@ import {
   EffectPass,
   RenderPass,
   ToneMappingEffect,
-  ToneMappingMode
+  ToneMappingMode,
 } from 'postprocessing'
 import {
-  Clock,
-  Group,
   HalfFloatType,
   Mesh,
-  MeshPhysicalMaterial,
   NoToneMapping,
   PCFSoftShadowMap,
   PerspectiveCamera,
   PlaneGeometry,
   Scene,
-  TorusKnotGeometry,
   Vector3,
   WebGLRenderer
 } from 'three'
@@ -32,7 +28,6 @@ import {
   SkyMaterial,
   SunDirectionalLight,
 } from '@takram/three-atmosphere'
-import { Ellipsoid, Geodetic, radians } from '@takram/three-geospatial'
 import {
   DitheringEffect,
   LensFlareEffect
@@ -41,8 +36,6 @@ import {
 let globe
 let renderer
 let camera
-let controls
-let clock
 let scene
 let skyMaterial
 let skyLight
@@ -55,9 +48,6 @@ const moonDirection = new Vector3()
 
 // A midnight sun in summer.
 const referenceDate = new Date('2000-06-01T10:00:00Z')
-const geodetic = new Geodetic(0, radians(67), 1000)
-const position = geodetic.toECEF()
-const up = Ellipsoid.WGS84.getSurfaceNormal(position)
 
 function init() {
   // scene
@@ -66,7 +56,7 @@ function init() {
   // renderer
   renderer = new WebGLRenderer({
     antialias: true,
-    depth: true,
+    depth: false,
     logarithmicDepthBuffer: true,
   });
   renderer.setPixelRatio(window.devicePixelRatio)
@@ -84,13 +74,6 @@ function init() {
   camera = new PerspectiveCamera(75, aspect, 10, 1e6);
   camera.position.set(4800000, 2570000, 14720000);
   camera.lookAt(0, 0, 0);
-
-  const group = new Group()
-  Ellipsoid.WGS84.getEastNorthUpFrame(camera.position).decompose(
-    group.position,
-    group.quaternion,
-    group.scale
-  )
 
   globe = new Globe(scene, camera, renderer);
   scene.add(globe.tiles.group);
@@ -126,7 +109,9 @@ function init() {
   // sunIrradiance and skyIrradiance to true, remove SkyLightProbe and
   // SunDirectionalLight, and provide a normal buffer to
   // AerialPerspectiveEffect.
-  aerialPerspective = new AerialPerspectiveEffect(camera)
+  aerialPerspective = new AerialPerspectiveEffect(camera, {
+    irradianceScale: 2 / Math.PI,
+  })
 
   // Use floating-point render buffer, as radiance/luminance is stored here.
   composer = new EffectComposer(renderer, {
@@ -139,7 +124,7 @@ function init() {
     new EffectPass(
       camera,
       new LensFlareEffect(),
-      new ToneMappingEffect({ mode: ToneMappingMode.AGX }),
+      new ToneMappingEffect({mode: ToneMappingMode.AGX}),
       new DitheringEffect()
     )
   )
@@ -182,6 +167,19 @@ function render() {
 
   sunLight.update()
   skyLight.update()
+
+  // Update effect materials with current camera settings
+  if (composer) {
+    composer.passes.forEach(pass => {
+      if (pass.fullscreenMaterial && typeof pass.fullscreenMaterial.adoptCameraSettings === 'function') {
+        pass.fullscreenMaterial.adoptCameraSettings(camera);
+      } else if (pass.adoptCameraSettings && typeof pass.adoptCameraSettings === 'function') {
+        // Some passes might have the method directly
+        pass.adoptCameraSettings(camera);
+      }
+    });
+  }
+
   composer.render()
 }
 
