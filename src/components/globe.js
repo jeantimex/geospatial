@@ -11,6 +11,7 @@ import {
   GoogleCloudAuthPlugin,
 } from "3d-tiles-renderer/plugins";
 import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader.js";
+import { TileNormalsPlugin } from "./TileNormalsPlugin";
 
 export class Globe {
   constructor(scene, camera, renderer) {
@@ -32,6 +33,12 @@ export class Globe {
     this.tiles.registerPlugin(
       new GLTFExtensionsPlugin({
         dracoLoader: new DRACOLoader().setDecoderPath('https://www.gstatic.com/draco/v1/decoders/'),
+      })
+    );
+    this.tiles.registerPlugin(
+      new TileNormalsPlugin({
+        creaseAngle: 30, // 30 degrees for creasing
+        smoothNormals: true
       })
     );
   
