@@ -18,7 +18,6 @@ import {
   PlaneGeometry,
   Scene,
   Vector3,
-  Matrix4,
   WebGLRenderer,
 } from "three";
 import { Globe } from "../components/globe";
@@ -26,12 +25,9 @@ import {
   AerialPerspectiveEffect,
   PrecomputedTexturesLoader,
   SkyMaterial,
+  getMoonDirectionECEF,
+  getSunDirectionECEF,
 } from "@takram/three-atmosphere";
-import {
-  getECIToECEFRotationMatrix,
-  getMoonDirectionECI,
-  getSunDirectionECI,
-} from "./celestialDirections";
 import {
   DitheringEffect,
   LensFlareEffect,
@@ -48,7 +44,6 @@ let composer;
 
 const sunDirection = new Vector3();
 const moonDirection = new Vector3();
-const rotationMatrix = new Matrix4();
 
 // A midnight sun in summer.
 const referenceDate = new Date("2000-06-01T19:00:00Z"); // Changed to 12 PM US PT (PDT = UTC-7)
@@ -99,10 +94,9 @@ function init() {
     sunIrradiance: true,
     transmittance: true,
     inscatter: true,
-    correctGeometricError: true,
-    correctAltitude: true,
-    photometric: true,
     sky: true,
+    sun: true,
+    moon: true,
   });
 
   // Use floating-point render buffer, as radiance/luminance is stored here.
@@ -111,7 +105,7 @@ function init() {
     multisampling: 8,
   });
   composer.addPass(new RenderPass(scene, camera));
-  composer.addPass(new EffectPass(camera, aerialPerspective));
+  composer.addPass(new EffectPass(camera, aerialPerspective))
   composer.addPass(
     new EffectPass(
       camera,
@@ -119,7 +113,7 @@ function init() {
       new ToneMappingEffect({ mode: ToneMappingMode.AGX }),
       new DitheringEffect()
     )
-  );
+  )
 
   // Load precomputed textures.
   new PrecomputedTexturesLoader()
@@ -143,11 +137,9 @@ function onWindowResize() {
 }
 
 function render() {
-  // const date = +referenceDate + ((clock.getElapsedTime() * 5e6) % 864e5);
   const date = referenceDate
-  getECIToECEFRotationMatrix(date, rotationMatrix);
-  getSunDirectionECI(date, sunDirection).applyMatrix4(rotationMatrix);
-  getMoonDirectionECI(date, moonDirection).applyMatrix4(rotationMatrix);
+  getSunDirectionECEF(date, sunDirection)
+  getMoonDirectionECEF(date, moonDirection)
 
   skyMaterial.sunDirection.copy(sunDirection);
   skyMaterial.moonDirection.copy(moonDirection);
