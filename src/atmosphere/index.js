@@ -164,9 +164,10 @@ function init() {
   )
 
   // Load precomputed textures.
+  const basePath = import.meta.env.BASE_URL || '/';
   new PrecomputedTexturesLoader()
     .setTypeFromRenderer(renderer)
-    .load('/assets/atmosphere', onPrecomputedTexturesLoad)
+    .load(basePath + 'assets/atmosphere', onPrecomputedTexturesLoad)
 
   container.appendChild(renderer.domElement)
   window.addEventListener('resize', onWindowResize)
