@@ -18,6 +18,7 @@ import {
   PlaneGeometry,
   Scene,
   Vector3,
+  Matrix4,
   WebGLRenderer,
 } from "three";
 import { Globe } from "../components/globe";
@@ -25,13 +26,17 @@ import {
   AerialPerspectiveEffect,
   PrecomputedTexturesLoader,
   SkyMaterial,
-  getMoonDirectionECEF,
-  getSunDirectionECEF,
 } from "@takram/three-atmosphere";
 import {
   DitheringEffect,
   LensFlareEffect,
 } from "@takram/three-geospatial-effects";
+import {
+  getMoonDirectionECI,
+  getSunDirectionECI,
+  getECIToECEFRotationMatrix
+} from "./celestialDirections";
+import { Geodetic, PointOfView, radians } from '@takram/three-geospatial';
 
 let globe;
 let clock;
@@ -44,9 +49,10 @@ let composer;
 
 const sunDirection = new Vector3();
 const moonDirection = new Vector3();
+const rotationMatrix = new Matrix4();
 
 // A midnight sun in summer.
-const referenceDate = new Date("2000-06-01T19:00:00Z"); // Changed to 12 PM US PT (PDT = UTC-7)
+const referenceDate = new Date("2025-04-27T12:00:00+09:00"); // Noon time at Tokyo
 
 function init() {
   clock = new Clock();
@@ -72,8 +78,39 @@ function init() {
   // camera
   const aspect = window.innerWidth / window.innerHeight;
   camera = new PerspectiveCamera(75, aspect, 10, 1e6);
-  camera.position.set(4800000, 2570000, 14720000);
-  camera.lookAt(0, 0, 0);
+
+  // --- New setup using geospatial coordinates ---
+  const longitude = 139.7671; // degrees (Tokyo)
+  const latitude = 35.6812;  // degrees
+  const heading = 180;      // degrees
+  const pitch = -30;        // degrees
+  const distance = 4500;    // meters
+
+  // Calculate the center point on the globe in ECEF coordinates
+  const centerECEF = new Geodetic(
+    radians(longitude),
+    radians(latitude)
+  ).toECEF(); // Converts lon/lat to a Vector3 position
+
+  // Calculate camera position and orientation based on the point of view
+  new PointOfView(
+    distance,
+    radians(heading),
+    radians(pitch)
+  ).decompose(
+    centerECEF,       // The point to look towards (target)
+    camera.position,  // Vector3 to store the calculated camera position
+    camera.quaternion // Quaternion to store the calculated camera orientation
+  );
+
+  // Ensure the camera's up vector is set correctly (usually Y-up for camera space)
+  // The .decompose method should handle this via the quaternion,
+  // but explicitly setting it can prevent issues if the camera was previously manipulated.
+  camera.up.set(0, 1, 0);
+
+  // Update projection matrix if aspect ratio changed
+  camera.aspect = aspect;
+  camera.updateProjectionMatrix();
 
   globe = new Globe(scene, camera, renderer);
   scene.add(globe.tiles.group);
@@ -137,9 +174,10 @@ function onWindowResize() {
 }
 
 function render() {
-  const date = referenceDate
-  getSunDirectionECEF(date, sunDirection)
-  getMoonDirectionECEF(date, moonDirection)
+  const date = referenceDate;
+  getECIToECEFRotationMatrix(date, rotationMatrix);
+  getSunDirectionECI(date, sunDirection).applyMatrix4(rotationMatrix);
+  getMoonDirectionECI(date, moonDirection).applyMatrix4(rotationMatrix);
 
   skyMaterial.sunDirection.copy(sunDirection);
   skyMaterial.moonDirection.copy(moonDirection);

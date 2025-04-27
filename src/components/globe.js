@@ -36,8 +36,6 @@ export class Globe {
       })
     );
   
-    this.tiles.group.rotation.x = -Math.PI / 2;
-  
     this.tiles.setResolutionFromRenderer(this.camera, this.renderer);
     this.tiles.setCamera(this.camera);
 
