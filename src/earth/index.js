@@ -111,6 +111,10 @@ function init() {
   // AerialPerspectiveEffect.
   aerialPerspective = new AerialPerspectiveEffect(camera, {
     irradianceScale: 2 / Math.PI,
+    skyIrradiance: true,
+    sunIrradiance: true,
+    transmittance: true,
+    inscatter: true
   })
 
   // Use floating-point render buffer, as radiance/luminance is stored here.
@@ -163,10 +167,10 @@ function render() {
   skyLight.sunDirection.copy(sunDirection)
   aerialPerspective.sunDirection.copy(sunDirection)
 
-  globe.update();
-
   sunLight.update()
   skyLight.update()
+
+  globe.update();
 
   // Update effect materials with current camera settings
   if (composer) {
