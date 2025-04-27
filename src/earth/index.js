@@ -9,14 +9,14 @@ import {
 } from 'postprocessing'
 import {
   HalfFloatType,
-  Mesh,
   NoToneMapping,
+  Mesh,
   PCFSoftShadowMap,
   PerspectiveCamera,
   PlaneGeometry,
   Scene,
   Vector3,
-  WebGLRenderer
+  WebGLRenderer,
 } from 'three'
 import { Globe } from "../components/globe";
 import {
@@ -24,9 +24,7 @@ import {
   getMoonDirectionECEF,
   getSunDirectionECEF,
   PrecomputedTexturesLoader,
-  SkyLightProbe,
   SkyMaterial,
-  SunDirectionalLight,
 } from '@takram/three-atmosphere'
 import {
   DitheringEffect,
@@ -38,8 +36,6 @@ let renderer
 let camera
 let scene
 let skyMaterial
-let skyLight
-let sunLight
 let aerialPerspective
 let composer
 
@@ -84,27 +80,6 @@ function init() {
   sky.frustumCulled = false
   scene.add(sky)
 
-  // SkyLightProbe computes sky irradiance of its position.
-  skyLight = new SkyLightProbe()
-  skyLight.position.copy(camera.position)
-  scene.add(skyLight)
-
-  // SunDirectionalLight computes sunlight transmittance to its target position.
-  sunLight = new SunDirectionalLight({ distance: 300 })
-  sunLight.target.position.copy(camera.position)
-  sunLight.castShadow = true
-  sunLight.shadow.camera.top = 300
-  sunLight.shadow.camera.bottom = -300
-  sunLight.shadow.camera.left = -300
-  sunLight.shadow.camera.right = 300
-  sunLight.shadow.camera.near = 0
-  sunLight.shadow.camera.far = 600
-  sunLight.shadow.mapSize.width = 2048
-  sunLight.shadow.mapSize.height = 2048
-  sunLight.shadow.normalBias = 1
-  scene.add(sunLight)
-  scene.add(sunLight.target)
-
   // Demonstrates forward lighting here. For deferred lighting, set
   // sunIrradiance and skyIrradiance to true, remove SkyLightProbe and
   // SunDirectionalLight, and provide a normal buffer to
@@ -143,8 +118,6 @@ function init() {
 
 function onPrecomputedTexturesLoad(textures) {
   Object.assign(skyMaterial, textures)
-  sunLight.transmittanceTexture = textures.transmittanceTexture
-  skyLight.irradianceTexture = textures.irradianceTexture
   Object.assign(aerialPerspective, textures)
 
   renderer.setAnimationLoop(render)
@@ -163,12 +136,7 @@ function render() {
 
   skyMaterial.sunDirection.copy(sunDirection)
   skyMaterial.moonDirection.copy(moonDirection)
-  sunLight.sunDirection.copy(sunDirection)
-  skyLight.sunDirection.copy(sunDirection)
   aerialPerspective.sunDirection.copy(sunDirection)
-
-  sunLight.update()
-  skyLight.update()
 
   globe.update();
 
