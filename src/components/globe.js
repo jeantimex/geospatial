@@ -31,8 +31,7 @@ export class Globe {
     this.tiles.registerPlugin(new TilesFadePlugin());
     this.tiles.registerPlugin(
       new GLTFExtensionsPlugin({
-        // Using local files from public directory for DRACO decoder
-        dracoLoader: new DRACOLoader().setDecoderPath("/assets/draco/"),
+        dracoLoader: new DRACOLoader().setDecoderPath('https://www.gstatic.com/draco/v1/decoders/'),
       })
     );
   
