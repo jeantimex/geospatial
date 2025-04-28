@@ -8,6 +8,7 @@ import {
   ToneMappingEffect,
   ToneMappingMode,
   SMAAEffect,
+  LUT3DEffect,
 } from "postprocessing";
 import {
   Clock,
@@ -21,6 +22,7 @@ import {
   Vector3,
   Matrix4,
   WebGLRenderer,
+  TextureLoader,
 } from "three";
 import { Globe } from "../components/globe";
 import {
@@ -31,6 +33,7 @@ import {
 import {
   DitheringEffect,
   LensFlareEffect,
+  createHaldLookupTexture,
 } from "@takram/three-geospatial-effects";
 import {
   getMoonDirectionECI,
@@ -47,6 +50,8 @@ let scene;
 let skyMaterial;
 let aerialPerspective;
 let composer;
+let lutTexture;
+let lutEffect;
 
 const sunDirection = new Vector3();
 const moonDirection = new Vector3();
@@ -133,6 +138,27 @@ function init() {
     moon: true,
   });
 
+  // Load precomputed textures.
+  const basePath = import.meta.env.BASE_URL || "/";
+  new PrecomputedTexturesLoader()
+    .setTypeFromRenderer(renderer)
+    .load(basePath + "assets/atmosphere", onPrecomputedTexturesLoad);
+
+  // --------------------------------
+  //  Color Grading is not working
+  // --------------------------------
+  // Load the LUT texture for color grading
+  const textureLoader = new TextureLoader();
+  // You can change the LUT file path to any of your available LUTs
+  const lutPath = basePath + "assets/clut/Fuji/Fuji 160C 1 -.png";
+  textureLoader.load(lutPath, (texture) => {
+    lutTexture = createHaldLookupTexture(texture);
+    lutEffect = new LUT3DEffect(lutTexture);
+    if (composer) {
+      // composer.addPass(new EffectPass(camera, lutEffect));
+    }
+  });
+
   // Use floating-point render buffer, as radiance/luminance is stored here.
   composer = new EffectComposer(renderer, {
     frameBufferType: HalfFloatType,
@@ -146,12 +172,6 @@ function init() {
   );
   composer.addPass(new EffectPass(camera, new SMAAEffect()));
   composer.addPass(new EffectPass(camera, new DitheringEffect()));
-
-  // Load precomputed textures.
-  const basePath = import.meta.env.BASE_URL || "/";
-  new PrecomputedTexturesLoader()
-    .setTypeFromRenderer(renderer)
-    .load(basePath + "assets/atmosphere", onPrecomputedTexturesLoad);
 
   window.addEventListener("resize", onWindowResize);
 }
