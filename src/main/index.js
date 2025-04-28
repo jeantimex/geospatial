@@ -7,6 +7,7 @@ import {
   RenderPass,
   ToneMappingEffect,
   ToneMappingMode,
+  SMAAEffect,
 } from "postprocessing";
 import {
   Clock,
@@ -34,9 +35,9 @@ import {
 import {
   getMoonDirectionECI,
   getSunDirectionECI,
-  getECIToECEFRotationMatrix
+  getECIToECEFRotationMatrix,
 } from "./celestialDirections";
-import { Geodetic, PointOfView, radians } from '@takram/three-geospatial';
+import { Geodetic, PointOfView, radians } from "@takram/three-geospatial";
 
 let globe;
 let clock;
@@ -81,10 +82,10 @@ function init() {
 
   // --- New setup using geospatial coordinates ---
   const longitude = 139.7671; // degrees (Tokyo)
-  const latitude = 35.6812;  // degrees
-  const heading = 180;      // degrees
-  const pitch = -30;        // degrees
-  const distance = 4500;    // meters
+  const latitude = 35.6812; // degrees
+  const heading = 180; // degrees
+  const pitch = -30; // degrees
+  const distance = 4500; // meters
 
   // Calculate the center point on the globe in ECEF coordinates
   const centerECEF = new Geodetic(
@@ -93,13 +94,9 @@ function init() {
   ).toECEF(); // Converts lon/lat to a Vector3 position
 
   // Calculate camera position and orientation based on the point of view
-  new PointOfView(
-    distance,
-    radians(heading),
-    radians(pitch)
-  ).decompose(
-    centerECEF,       // The point to look towards (target)
-    camera.position,  // Vector3 to store the calculated camera position
+  new PointOfView(distance, radians(heading), radians(pitch)).decompose(
+    centerECEF, // The point to look towards (target)
+    camera.position, // Vector3 to store the calculated camera position
     camera.quaternion // Quaternion to store the calculated camera orientation
   );
 
@@ -142,18 +139,16 @@ function init() {
     multisampling: 8,
   });
   composer.addPass(new RenderPass(scene, camera));
-  composer.addPass(new EffectPass(camera, aerialPerspective))
+  composer.addPass(new EffectPass(camera, aerialPerspective));
+  composer.addPass(new EffectPass(camera, new LensFlareEffect()));
   composer.addPass(
-    new EffectPass(
-      camera,
-      new LensFlareEffect(),
-      new ToneMappingEffect({ mode: ToneMappingMode.AGX }),
-      new DitheringEffect()
-    )
-  )
+    new EffectPass(camera, new ToneMappingEffect({ mode: ToneMappingMode.AGX }))
+  );
+  composer.addPass(new EffectPass(camera, new SMAAEffect()));
+  composer.addPass(new EffectPass(camera, new DitheringEffect()));
 
   // Load precomputed textures.
-  const basePath = import.meta.env.BASE_URL || '/';
+  const basePath = import.meta.env.BASE_URL || "/";
   new PrecomputedTexturesLoader()
     .setTypeFromRenderer(renderer)
     .load(basePath + "assets/atmosphere", onPrecomputedTexturesLoad);
@@ -188,11 +183,11 @@ function render() {
 
   // Update effect materials with current camera settings
   if (composer) {
-    composer.passes.forEach(pass => {
+    composer.passes.forEach((pass) => {
       if (pass.fullscreenMaterial instanceof EffectMaterial) {
-        pass.fullscreenMaterial.adoptCameraSettings(camera)
+        pass.fullscreenMaterial.adoptCameraSettings(camera);
       }
-    })
+    });
   }
 
   composer.render();

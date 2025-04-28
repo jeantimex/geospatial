@@ -1,7 +1,4 @@
-import {
-  GlobeControls,
-  TilesRenderer,
-} from "3d-tiles-renderer";
+import { GlobeControls, TilesRenderer } from "3d-tiles-renderer";
 import {
   TilesFadePlugin,
   UpdateOnChangePlugin,
@@ -32,7 +29,9 @@ export class Globe {
     this.tiles.registerPlugin(new TilesFadePlugin());
     this.tiles.registerPlugin(
       new GLTFExtensionsPlugin({
-        dracoLoader: new DRACOLoader().setDecoderPath('https://www.gstatic.com/draco/v1/decoders/'),
+        dracoLoader: new DRACOLoader().setDecoderPath(
+          "https://www.gstatic.com/draco/v1/decoders/"
+        ),
       })
     );
     // this.tiles.registerPlugin(
@@ -41,7 +40,7 @@ export class Globe {
     //     smoothNormals: true
     //   })
     // );
-  
+
     this.tiles.setResolutionFromRenderer(this.camera, this.renderer);
     this.tiles.setCamera(this.camera);
 
@@ -49,7 +48,7 @@ export class Globe {
       this.scene,
       this.camera,
       this.renderer.domElement,
-      this.tiles,
+      this.tiles
     );
     this.controls.enableDamping = true;
   }
