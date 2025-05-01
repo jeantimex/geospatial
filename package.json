@@ -18,13 +18,15 @@
     "vite": "^6.3.1"
   },
   "dependencies": {
+    "@here/quantized-mesh-decoder": "^1.2.8",
     "@takram/three-atmosphere": "^0.11.1",
     "@takram/three-clouds": "^0.2.1",
     "@takram/three-geospatial": "^0.2.0",
     "@takram/three-geospatial-effects": "^0.3.0",
     "3d-tiles-renderer": "^0.4.8",
-    "postprocessing": "^6.36.7",
+    "postprocessing": "^6.37.2",
     "stats.js": "^0.17.0",
-    "three": "^0.175.0"
+    "three": "^0.175.0",
+    "workerpool": "^9.2.0"
   }
 }

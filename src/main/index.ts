@@ -11,7 +11,6 @@ import {
   LUT3DEffect,
 } from "postprocessing";
 import {
-  Clock,
   HalfFloatType,
   NoToneMapping,
   Mesh,
@@ -131,7 +130,7 @@ function init(): void {
   // AerialPerspectiveEffect.
   aerialPerspective = new AerialPerspectiveEffect(camera, {
     correctGeometricError: true,
-    correctAltitude: false,
+    correctAltitude: true,
     inscatter: true,
     photometric: true,
     skyIrradiance: true,
@@ -142,7 +141,6 @@ function init(): void {
     sun: true,
     moon: true,
   });
-  console.log(aerialPerspective);
 
   // Load precomputed textures.
   const basePath = import.meta.env.BASE_URL || "/";
@@ -208,8 +206,6 @@ function render(): void {
   aerialPerspective.sunDirection.copy(sunDirection);
   aerialPerspective.moonDirection.copy(moonDirection);
 
-  globe.update();
-
   // Update effect materials with current camera settings
   if (composer) {
     composer.passes.forEach((pass) => {
@@ -219,6 +215,7 @@ function render(): void {
     });
   }
 
+  globe.update();
   composer.render();
 }
 

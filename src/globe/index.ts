@@ -9,7 +9,7 @@ import {
 } from "3d-tiles-renderer/plugins";
 import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader.js";
 import { Scene, PerspectiveCamera, WebGLRenderer } from "three";
-// import { TileNormalsPlugin } from "./TileNormalsPlugin";
+import { TileCreasedNormalsPlugin } from "../plugins/TileCreasedNormalsPlugin";
 
 export class Globe {
   scene: Scene;
@@ -30,10 +30,6 @@ export class Globe {
         autoRefreshToken: true,
       })
     );
-    this.tiles.registerPlugin(new TileCompressionPlugin());
-    this.tiles.registerPlugin(new UpdateOnChangePlugin());
-    this.tiles.registerPlugin(new UnloadTilesPlugin());
-    this.tiles.registerPlugin(new TilesFadePlugin());
     this.tiles.registerPlugin(
       new GLTFExtensionsPlugin({
         dracoLoader: new DRACOLoader().setDecoderPath(
@@ -41,10 +37,13 @@ export class Globe {
         ),
       })
     );
+    this.tiles.registerPlugin(new TileCompressionPlugin());
+    this.tiles.registerPlugin(new UpdateOnChangePlugin());
+    this.tiles.registerPlugin(new UnloadTilesPlugin());
+    this.tiles.registerPlugin(new TilesFadePlugin());
     // this.tiles.registerPlugin(
-    //   new TileNormalsPlugin({
-    //     creaseAngle: 30, // 30 degrees for creasing
-    //     smoothNormals: true
+    //   new TileCreasedNormalsPlugin({
+    //     creaseAngle: 30,
     //   })
     // );
 
