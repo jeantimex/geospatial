@@ -24,7 +24,6 @@ import {
   WebGLRenderer,
   TextureLoader,
   Texture,
-  Quaternion,
 } from "three";
 import { Globe } from "../components/globe";
 import {
@@ -37,7 +36,6 @@ import {
   LensFlareEffect,
   createHaldLookupTexture,
 } from "@takram/three-geospatial-effects";
-import { Ellipsoid } from "@takram/three-geospatial";
 import {
   getMoonDirectionECI,
   getSunDirectionECI,
