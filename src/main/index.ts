@@ -169,6 +169,7 @@ function init(): void {
     multisampling: 8,
   });
   composer.addPass(new RenderPass(scene, camera));
+  // TODO: Fix the 3D tiles normal.
   // composer.addPass(new EffectPass(camera, new NormalEffect(camera)));
   composer.addPass(new EffectPass(camera, aerialPerspective));
   composer.addPass(new EffectPass(camera, new LensFlareEffect()));
