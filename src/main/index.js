@@ -35,6 +35,7 @@ import {
   LensFlareEffect,
   createHaldLookupTexture,
 } from "@takram/three-geospatial-effects";
+import { Ellipsoid } from "@takram/three-geospatial";
 import {
   getMoonDirectionECI,
   getSunDirectionECI,
@@ -57,8 +58,8 @@ const sunDirection = new Vector3();
 const moonDirection = new Vector3();
 const rotationMatrix = new Matrix4();
 
-// A midnight sun in summer.
-const referenceDate = new Date("2025-04-27T12:00:00+09:00"); // Noon time at Tokyo
+// Tokyo time 14:30
+const referenceDate = new Date("2024-01-27T15:00:00+09:00");
 
 function init() {
   clock = new Clock();
@@ -128,15 +129,19 @@ function init() {
   // SunDirectionalLight, and provide a normal buffer to
   // AerialPerspectiveEffect.
   aerialPerspective = new AerialPerspectiveEffect(camera, {
-    irradianceScale: 2 / Math.PI,
+    correctGeometricError: true,
+    correctAltitude: false,
+    inscatter: true,
+    photometric: true,
     skyIrradiance: true,
     sunIrradiance: true,
     transmittance: true,
-    inscatter: true,
+    irradianceScale: 2 / Math.PI,
     sky: true,
     sun: true,
     moon: true,
   });
+  console.log(aerialPerspective);
 
   // Load precomputed textures.
   const basePath = import.meta.env.BASE_URL || "/";
@@ -197,7 +202,9 @@ function render() {
 
   skyMaterial.sunDirection.copy(sunDirection);
   skyMaterial.moonDirection.copy(moonDirection);
+
   aerialPerspective.sunDirection.copy(sunDirection);
+  aerialPerspective.moonDirection.copy(moonDirection);
 
   globe.update();
 
