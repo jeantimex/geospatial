@@ -11,7 +11,10 @@
     "deploy": "npm run build && gh-pages -d dist"
   },
   "devDependencies": {
+    "@types/stats.js": "^0.17.3",
+    "@types/three": "^0.176.0",
     "gh-pages": "^6.3.0",
+    "typescript": "^5.8.3",
     "vite": "^6.3.1"
   },
   "dependencies": {

@@ -1,0 +1,208 @@
+import '../styles.css'; // Import the CSS file
+
+import {
+  EffectComposer,
+  EffectPass,
+  RenderPass,
+  ToneMappingEffect,
+  ToneMappingMode
+} from 'postprocessing'
+import {
+  Clock,
+  Group,
+  HalfFloatType,
+  Mesh,
+  MeshPhysicalMaterial,
+  NoToneMapping,
+  PCFSoftShadowMap,
+  PerspectiveCamera,
+  PlaneGeometry,
+  Scene,
+  TorusKnotGeometry,
+  Vector3,
+  WebGLRenderer
+} from 'three'
+import { OrbitControls } from 'three-stdlib'
+import invariant from 'tiny-invariant'
+
+import {
+  AerialPerspectiveEffect,
+  getMoonDirectionECEF,
+  getSunDirectionECEF,
+  PrecomputedTexturesLoader,
+  SkyLightProbe,
+  SkyMaterial,
+  SunDirectionalLight,
+} from '@takram/three-atmosphere'
+import { Ellipsoid, Geodetic, radians } from '@takram/three-geospatial'
+import {
+  DitheringEffect,
+  LensFlareEffect
+} from '@takram/three-geospatial-effects'
+
+let renderer: WebGLRenderer
+let camera: PerspectiveCamera
+let controls: OrbitControls
+let clock: Clock
+let scene: Scene
+let skyMaterial: SkyMaterial
+let skyLight: SkyLightProbe
+let sunLight: SunDirectionalLight
+let aerialPerspective: AerialPerspectiveEffect
+let composer: EffectComposer
+
+const sunDirection = new Vector3()
+const moonDirection = new Vector3()
+
+// A midnight sun in summer.
+const referenceDate = new Date('2000-06-01T10:00:00Z')
+const geodetic = new Geodetic(0, radians(67), 1000)
+const position = geodetic.toECEF()
+const up = Ellipsoid.WGS84.getSurfaceNormal(position)
+
+function init(): void {
+  // Create the scene
+  clock = new Clock()
+  scene = new Scene()
+
+  // Create the camera
+  const aspect = window.innerWidth / window.innerHeight
+  camera = new PerspectiveCamera(75, aspect, 10, 1e6)
+  camera.position.copy(position)
+  camera.up.copy(up)
+
+  // Create the controls
+  const container = document.getElementById('container')
+  invariant(container != null)
+  controls = new OrbitControls(camera, container)
+  controls.enableDamping = true
+  controls.minDistance = 1e3
+  controls.target.copy(position)
+
+  // Create the renderer
+  renderer = new WebGLRenderer({
+    depth: false,
+    logarithmicDepthBuffer: true
+  })
+  renderer.setPixelRatio(window.devicePixelRatio)
+  renderer.setSize(window.innerWidth, window.innerHeight)
+  renderer.toneMapping = NoToneMapping
+  renderer.toneMappingExposure = 10
+  renderer.shadowMap.enabled = true
+  renderer.shadowMap.type = PCFSoftShadowMap
+
+  // Create the sky
+  skyMaterial = new SkyMaterial()
+  const sky = new Mesh(new PlaneGeometry(2, 2), skyMaterial)
+  sky.frustumCulled = false
+  scene.add(sky)
+
+  // SkyLightProbe computes sky irradiance of its position.
+  skyLight = new SkyLightProbe()
+  skyLight.position.copy(position)
+  scene.add(skyLight)
+
+  // SunDirectionalLight computes sunlight transmittance to its target position.
+  sunLight = new SunDirectionalLight({ distance: 300 })
+  sunLight.target.position.copy(position)
+  sunLight.castShadow = true
+  sunLight.shadow.camera.top = 300
+  sunLight.shadow.camera.bottom = -300
+  sunLight.shadow.camera.left = -300
+  sunLight.shadow.camera.right = 300
+  sunLight.shadow.camera.near = 0
+  sunLight.shadow.camera.far = 600
+  sunLight.shadow.mapSize.width = 2048
+  sunLight.shadow.mapSize.height = 2048
+  sunLight.shadow.normalBias = 1
+  scene.add(sunLight)
+  scene.add(sunLight.target)
+
+  const group = new Group()
+  Ellipsoid.WGS84.getEastNorthUpFrame(position).decompose(
+    group.position,
+    group.quaternion,
+    group.scale
+  )
+
+  const torusKnot = new Mesh(
+    new TorusKnotGeometry(200, 60, 256, 64),
+    new MeshPhysicalMaterial({
+      color: 'white',
+      roughness: 0.5,
+      ior: 1.45,
+      clearcoat: 1,
+      clearcoatRoughness: 0.1
+    })
+  )
+  torusKnot.castShadow = true
+  torusKnot.receiveShadow = true
+  group.add(torusKnot)
+
+  scene.add(group)
+
+  // Demonstrates forward lighting here. For deferred lighting, set
+  // sunIrradiance and skyIrradiance to true, remove SkyLightProbe and
+  // SunDirectionalLight, and provide a normal buffer to
+  // AerialPerspectiveEffect.
+  aerialPerspective = new AerialPerspectiveEffect(camera)
+
+  // Use floating-point render buffer, as radiance/luminance is stored here.
+  composer = new EffectComposer(renderer, {
+    frameBufferType: HalfFloatType,
+    multisampling: 8
+  })
+  composer.addPass(new RenderPass(scene, camera))
+  composer.addPass(new EffectPass(camera, aerialPerspective))
+  composer.addPass(
+    new EffectPass(
+      camera,
+      new LensFlareEffect(),
+      new ToneMappingEffect({ mode: ToneMappingMode.AGX }),
+      new DitheringEffect()
+    )
+  )
+
+  // Load precomputed textures.
+  const basePath = import.meta.env.BASE_URL || '/';
+  new PrecomputedTexturesLoader()
+    .setTypeFromRenderer(renderer)
+    .load(basePath + 'assets/atmosphere', onPrecomputedTexturesLoad)
+
+  container.appendChild(renderer.domElement)
+  window.addEventListener('resize', onWindowResize)
+}
+
+function onPrecomputedTexturesLoad(textures: any): void {
+  Object.assign(skyMaterial, textures)
+  sunLight.transmittanceTexture = textures.transmittanceTexture
+  skyLight.irradianceTexture = textures.irradianceTexture
+  Object.assign(aerialPerspective, textures)
+
+  renderer.setAnimationLoop(render)
+}
+
+function onWindowResize(): void {
+  camera.aspect = window.innerWidth / window.innerHeight
+  camera.updateProjectionMatrix()
+  renderer.setSize(window.innerWidth, window.innerHeight)
+}
+
+function render(): void {
+  const date = +referenceDate + ((clock.getElapsedTime() * 5e6) % 864e5)
+  getSunDirectionECEF(date, sunDirection)
+  getMoonDirectionECEF(date, moonDirection)
+
+  skyMaterial.sunDirection.copy(sunDirection)
+  skyMaterial.moonDirection.copy(moonDirection)
+  sunLight.sunDirection.copy(sunDirection)
+  skyLight.sunDirection.copy(sunDirection)
+  aerialPerspective.sunDirection.copy(sunDirection)
+
+  sunLight.update()
+  skyLight.update()
+  controls.update()
+  composer.render()
+}
+
+window.addEventListener('load', init);
