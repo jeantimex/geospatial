@@ -113,7 +113,7 @@ function init(): void {
   clouds = new CloudsEffect(camera);
   clouds.coverage = 0.4;
   clouds.localWeatherVelocity.set(0.001, 0);
-  
+
   // Add event listener with proper type
   clouds.events.addEventListener('change', (event) => {
     if (event.property !== undefined) {

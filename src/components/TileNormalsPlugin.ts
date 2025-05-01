@@ -39,7 +39,7 @@ export class TileNormalsPlugin {
    */
   async processTileModel(scene: Object3D, tile: Tile): Promise<void> {
     const meshes: Mesh[] = [];
-    
+
     // Find all meshes in the scene
     scene.traverse(object => {
       if (object instanceof Mesh && object.geometry instanceof BufferGeometry) {
@@ -78,15 +78,15 @@ export class TileNormalsPlugin {
 
         // For more complex geometries, we could split the work across multiple frames
         // by processing chunks of vertices in each frame
-        
+
         // This is where we would implement a more sophisticated normal computation:
         // 1. Identify vertices that should be creased based on the angle between faces
         // 2. Average normals for non-creased vertices
         // 3. Keep original normals for creased vertices
-        
+
         // For now, we'll just ensure normals are computed and updated
         geometry.attributes.normal.needsUpdate = true;
-        
+
         resolve();
       });
     });
