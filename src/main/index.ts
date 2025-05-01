@@ -25,7 +25,7 @@ import {
   TextureLoader,
   Texture,
 } from "three";
-import { Globe } from "../components/globe";
+import { Globe } from "../globe";
 import {
   AerialPerspectiveEffect,
   PrecomputedTexturesLoader,
@@ -34,17 +34,17 @@ import {
 import {
   DitheringEffect,
   LensFlareEffect,
+  NormalEffect,
   createHaldLookupTexture,
 } from "@takram/three-geospatial-effects";
 import {
   getMoonDirectionECI,
   getSunDirectionECI,
   getECIToECEFRotationMatrix,
-} from "./celestialDirections";
+} from "../utils/celestialDirections";
 import { Geodetic, PointOfView, radians } from "@takram/three-geospatial";
 
 let globe: Globe;
-let clock: Clock;
 let renderer: WebGLRenderer;
 let camera: PerspectiveCamera;
 let scene: Scene;
@@ -62,7 +62,6 @@ const rotationMatrix = new Matrix4();
 const referenceDate = new Date("2024-01-27T15:00:00+09:00");
 
 function init(): void {
-  clock = new Clock();
   // scene
   scene = new Scene();
 
@@ -172,6 +171,7 @@ function init(): void {
     multisampling: 8,
   });
   composer.addPass(new RenderPass(scene, camera));
+  // composer.addPass(new EffectPass(camera, new NormalEffect(camera)));
   composer.addPass(new EffectPass(camera, aerialPerspective));
   composer.addPass(new EffectPass(camera, new LensFlareEffect()));
   composer.addPass(

@@ -5,7 +5,7 @@ import {
   WebGLRenderer,
   PerspectiveCamera,
 } from "three";
-import { Globe } from "../components/globe";
+import { Globe } from "../globe";
 
 let globe: Globe;
 let scene: Scene;
