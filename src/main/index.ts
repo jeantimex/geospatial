@@ -58,7 +58,7 @@ const sunDirection = new Vector3();
 const moonDirection = new Vector3();
 const rotationMatrix = new Matrix4();
 
-const referenceDate = new Date("2024-01-01T15:00:00+08:00");
+const referenceDate = new Date("2024-01-01T16:00:00+09:00");
 
 function init(): void {
   // scene
@@ -130,7 +130,7 @@ function init(): void {
   // AerialPerspectiveEffect.
   aerialPerspective = new AerialPerspectiveEffect(camera, {
     correctGeometricError: true,
-    correctAltitude: false,
+    correctAltitude: true,
     inscatter: true,
     photometric: true,
     skyIrradiance: true,
