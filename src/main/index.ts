@@ -206,6 +206,8 @@ function render(): void {
   aerialPerspective.sunDirection.copy(sunDirection);
   aerialPerspective.moonDirection.copy(moonDirection);
 
+  globe.update();
+
   // Update effect materials with current camera settings
   if (composer) {
     composer.passes.forEach((pass) => {
@@ -213,10 +215,8 @@ function render(): void {
         pass.fullscreenMaterial.adoptCameraSettings(camera);
       }
     });
+    composer.render();
   }
-
-  globe.update();
-  composer.render();
 }
 
 window.addEventListener("load", init);
