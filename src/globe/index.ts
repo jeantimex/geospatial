@@ -45,11 +45,11 @@ export class Globe {
     this.tiles.registerPlugin(new UpdateOnChangePlugin());
     this.tiles.registerPlugin(new UnloadTilesPlugin());
     this.tiles.registerPlugin(new TilesFadePlugin());
-    this.tiles.registerPlugin(
-      new TileCreasedNormalsPlugin({
-        creaseAngle: 30,
-      })
-    );
+    // this.tiles.registerPlugin(
+    //   new TileCreasedNormalsPlugin({
+    //     creaseAngle: 30,
+    //   })
+    // );
 
     this.tiles.setResolutionFromRenderer(this.camera, this.renderer);
     this.tiles.setCamera(this.camera);

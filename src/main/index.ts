@@ -58,7 +58,8 @@ const sunDirection = new Vector3();
 const moonDirection = new Vector3();
 const rotationMatrix = new Matrix4();
 
-const referenceDate = new Date("2024-01-01T16:00:00+09:00");
+// Tokyo time 12:00PM
+const referenceDate = new Date("2025-05-01T12:00:00+09:00");
 
 function init(): void {
   // scene

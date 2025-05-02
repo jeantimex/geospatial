@@ -23,7 +23,7 @@
     "@takram/three-clouds": "^0.2.1",
     "@takram/three-geospatial": "^0.2.0",
     "@takram/three-geospatial-effects": "^0.3.0",
-    "3d-tiles-renderer": "0.4.7",
+    "3d-tiles-renderer": "^0.4.8",
     "postprocessing": "^6.37.2",
     "three": "^0.175.0",
     "three-stdlib": "^2.36.0",
