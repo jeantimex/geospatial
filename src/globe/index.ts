@@ -7,7 +7,7 @@ import {
   GLTFExtensionsPlugin,
   GoogleCloudAuthPlugin,
 } from "3d-tiles-renderer/plugins";
-import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader.js";
+import { DRACOLoader } from "three-stdlib";
 import { Scene, PerspectiveCamera, WebGLRenderer } from "three";
 import { TileCreasedNormalsPlugin } from "../plugins/TileCreasedNormalsPlugin";
 
@@ -18,7 +18,11 @@ export class Globe {
   tiles: TilesRenderer;
   controls: GlobeControls;
 
-  constructor(scene: Scene, camera: PerspectiveCamera, renderer: WebGLRenderer) {
+  constructor(
+    scene: Scene,
+    camera: PerspectiveCamera,
+    renderer: WebGLRenderer
+  ) {
     this.scene = scene;
     this.camera = camera;
     this.renderer = renderer;
@@ -41,12 +45,11 @@ export class Globe {
     this.tiles.registerPlugin(new UpdateOnChangePlugin());
     this.tiles.registerPlugin(new UnloadTilesPlugin());
     this.tiles.registerPlugin(new TilesFadePlugin());
-    // Nee performance improvement.
-    this.tiles.registerPlugin(
-      new TileCreasedNormalsPlugin({
-        creaseAngle: 30,
-      })
-    );
+    // this.tiles.registerPlugin(
+    //   new TileCreasedNormalsPlugin({
+    //     creaseAngle: 30,
+    //   })
+    // );
 
     this.controls = new GlobeControls(
       this.scene,

@@ -25,8 +25,8 @@
     "@takram/three-geospatial-effects": "^0.3.0",
     "3d-tiles-renderer": "^0.4.8",
     "postprocessing": "^6.37.2",
-    "stats.js": "^0.17.0",
     "three": "^0.175.0",
+    "three-stdlib": "^2.36.0",
     "workerpool": "^9.2.0"
   }
 }
