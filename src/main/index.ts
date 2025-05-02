@@ -42,6 +42,7 @@ import {
   getECIToECEFRotationMatrix,
 } from "../utils/celestialDirections";
 import { Geodetic, PointOfView, radians } from "@takram/three-geospatial";
+import { createDateFromDayAndTimeWithLongitude } from "../utils/dateUtils";
 
 let globe: Globe;
 let renderer: WebGLRenderer;
@@ -57,8 +58,7 @@ const sunDirection = new Vector3();
 const moonDirection = new Vector3();
 const rotationMatrix = new Matrix4();
 
-// Tokyo time 15:00
-const referenceDate = new Date("2024-01-27T15:00:00+09:00");
+const referenceDate = new Date("2024-01-01T15:00:00+08:00");
 
 function init(): void {
   // scene
@@ -169,8 +169,6 @@ function init(): void {
     multisampling: 8,
   });
   composer.addPass(new RenderPass(scene, camera));
-  // TODO: Fix the 3D tiles normal.
-  //composer.addPass(new EffectPass(camera, new NormalEffect(camera)));
   composer.addPass(new EffectPass(camera, aerialPerspective));
   composer.addPass(new EffectPass(camera, new LensFlareEffect()));
   composer.addPass(
