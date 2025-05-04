@@ -17,6 +17,7 @@ export default defineConfig({
         atmosphere: resolve(__dirname, 'atmosphere.html'),
         clouds: resolve(__dirname, 'clouds.html'),
         tiles: resolve(__dirname, 'tiles.html'),
+        composer: resolve(__dirname, 'composer.html'),
       },
     },
   },
