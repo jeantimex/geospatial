@@ -92,7 +92,7 @@ function init(): void {
   const longitude = 139.7671; // degrees (Tokyo)
   const latitude = 35.6812; // degrees
   const heading = 180; // degrees
-  const pitch = -30; // degrees
+  const pitch = -10; // degrees
   const distance = 4500; // meters
 
   // Calculate the center point on the globe in ECEF coordinates
