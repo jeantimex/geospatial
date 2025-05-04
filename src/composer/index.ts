@@ -13,7 +13,7 @@ import {
   Group,
   HalfFloatType,
   Mesh,
-  MeshPhysicalMaterial,
+  MeshBasicMaterial,
   NoToneMapping,
   PCFSoftShadowMap,
   PerspectiveCamera,
@@ -108,12 +108,8 @@ function init(): void {
 
   const torusKnot = new Mesh(
     new TorusKnotGeometry(200, 60, 256, 64),
-    new MeshPhysicalMaterial({
+    new MeshBasicMaterial({
       color: "white",
-      roughness: 0.5,
-      ior: 1.45,
-      clearcoat: 1,
-      clearcoatRoughness: 0.1,
     })
   );
   torusKnot.castShadow = true;
