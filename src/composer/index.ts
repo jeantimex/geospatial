@@ -37,6 +37,7 @@ import { Ellipsoid, Geodetic, radians } from "@takram/three-geospatial";
 import {
   DitheringEffect,
   LensFlareEffect,
+  NormalEffect,
 } from "@takram/three-geospatial-effects";
 import {
   getMoonDirectionECI,
@@ -142,8 +143,12 @@ function init(): void {
     frameBufferType: HalfFloatType,
     multisampling: 8,
   });
+  const normalPass = new NormalPass(scene, camera);
+  normalPass.enabled = false;
   composer.addPass(new RenderPass(scene, camera));
   composer.addPass(new NormalPass(scene, camera));
+  // Adding this will darker the torus knot.
+  // composer.addPass(new EffectPass(camera, new NormalEffect(camera)));
   composer.addPass(new EffectPass(camera, aerialPerspective));
   composer.addPass(new EffectPass(camera, new LensFlareEffect()));
   composer.addPass(
