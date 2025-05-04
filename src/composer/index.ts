@@ -4,6 +4,7 @@ import {
   EffectMaterial,
   EffectComposer,
   EffectPass,
+  NormalPass,
   RenderPass,
   ToneMappingEffect,
   ToneMappingMode,
@@ -142,6 +143,7 @@ function init(): void {
     multisampling: 8,
   });
   composer.addPass(new RenderPass(scene, camera));
+  composer.addPass(new NormalPass(scene, camera));
   composer.addPass(new EffectPass(camera, aerialPerspective));
   composer.addPass(new EffectPass(camera, new LensFlareEffect()));
   composer.addPass(

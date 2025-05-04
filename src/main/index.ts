@@ -4,6 +4,7 @@ import {
   EffectMaterial,
   EffectComposer,
   EffectPass,
+  NormalPass,
   RenderPass,
   ToneMappingEffect,
   ToneMappingMode,
@@ -56,8 +57,8 @@ const sunDirection = new Vector3();
 const moonDirection = new Vector3();
 const rotationMatrix = new Matrix4();
 
-// Tokyo time 12:00PM
-const referenceDate = new Date("2025-05-01T12:00:00+09:00");
+// Tokyo time 15:00PM
+const referenceDate = new Date("2025-01-01T15:00:00+09:00");
 
 function init(): void {
   // scene
@@ -65,7 +66,9 @@ function init(): void {
 
   // renderer
   renderer = new WebGLRenderer({
+    powerPreference: "high-performance",
     antialias: true,
+    stencil: false,
     depth: false,
     logarithmicDepthBuffer: true,
   });
@@ -114,14 +117,14 @@ function init(): void {
   camera.aspect = aspect;
   camera.updateProjectionMatrix();
 
-  globe = new Globe(scene, camera, renderer);
-  scene.add(globe.tiles.group);
-
   // Create the sky
   skyMaterial = new SkyMaterial();
   const sky = new Mesh(new PlaneGeometry(2, 2), skyMaterial);
   sky.frustumCulled = false;
   scene.add(sky);
+
+  globe = new Globe(scene, camera, renderer);
+  scene.add(globe.tiles.group);
 
   // Demonstrates forward lighting here. For deferred lighting, set
   // sunIrradiance and skyIrradiance to true, remove SkyLightProbe and
@@ -168,6 +171,7 @@ function init(): void {
     multisampling: 8,
   });
   composer.addPass(new RenderPass(scene, camera));
+  composer.addPass(new NormalPass(scene, camera));
   composer.addPass(new EffectPass(camera, aerialPerspective));
   composer.addPass(new EffectPass(camera, new LensFlareEffect()));
   composer.addPass(
@@ -207,14 +211,7 @@ function render(): void {
   globe.update();
 
   // Update effect materials with current camera settings
-  if (composer) {
-    composer.passes.forEach((pass) => {
-      if (pass.fullscreenMaterial instanceof EffectMaterial) {
-        pass.fullscreenMaterial.adoptCameraSettings(camera);
-      }
-    });
-    composer.render();
-  }
+  composer?.render();
 }
 
 window.addEventListener("load", init);
