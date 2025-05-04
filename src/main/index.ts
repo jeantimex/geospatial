@@ -33,7 +33,6 @@ import {
 import {
   DitheringEffect,
   LensFlareEffect,
-  NormalEffect,
   createHaldLookupTexture,
 } from "@takram/three-geospatial-effects";
 import {
@@ -42,7 +41,6 @@ import {
   getECIToECEFRotationMatrix,
 } from "../utils/celestialDirections";
 import { Geodetic, PointOfView, radians } from "@takram/three-geospatial";
-import { createDateFromDayAndTimeWithLongitude } from "../utils/dateUtils";
 
 let globe: Globe;
 let renderer: WebGLRenderer;
