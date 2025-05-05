@@ -171,7 +171,8 @@ function init(): void {
     multisampling: 8,
   });
   const normalPass = new NormalPass(scene, camera);
-  normalPass.enabled = false;
+  aerialPerspective.normalBuffer = normalPass.texture;
+
   composer.addPass(new RenderPass(scene, camera));
   composer.addPass(normalPass);
   composer.addPass(new EffectPass(camera, aerialPerspective));
@@ -213,7 +214,14 @@ function render(): void {
   globe.update();
 
   // Update effect materials with current camera settings
-  composer?.render();
+  if (composer) {
+    composer.passes.forEach((pass) => {
+      if (pass.fullscreenMaterial instanceof EffectMaterial) {
+        pass.fullscreenMaterial.adoptCameraSettings(camera);
+      }
+    });
+    composer.render();
+  }
 }
 
 window.addEventListener("load", init);
