@@ -4,7 +4,7 @@ A collection of Three.js-based geospatial visualizations, featuring an Earth atm
 
 ## Atmosphere Demo
 
-This demo showcases a realistic Earth atmosphere effect using the `@takram/three-atmosphere` library. The visualization includes:
+This demo showcases a realistic Earth atmosphere effect using the `@takram/three-atmosphere` [library](https://github.com/takram-design-engineering/three-geospatial/). The visualization includes:
 
 - Realistic sky rendering with proper light scattering
 - Dynamic sun and moon positioning
@@ -53,7 +53,10 @@ This demo showcases a realistic Earth atmosphere effect using the `@takram/three
 
 ## Available Demos
 
-- **Atmosphere**: A realistic Earth atmosphere visualization (atmosphere.html)
+- **Atmosphere**: A realistic Earth atmosphere visualization (https://jeantimex.github.io/geospatial/atmosphere.html). This is based on @takram/three-geospatial's Atmosphere Vanilla demo: https://takram-design-engineering.github.io/three-geospatial/?path=/story/atmosphere-atmosphere--vanilla.
+- **Clouds**: Simulate the clouds visualization (https://jeantimex.github.io/geospatial/clouds.html). This is based on @takram/three-geospatial's Clouds Vanilla demo.
+- **Deferred Lighting**: Use deferred lighting technique to render the atmosphere and a simple Three.JS torus knot object. (https://jeantimex.github.io/geospatial/deferred-lighting.html)
+- **Tiles**: The vanilla implementation of rendering Google Photorealistic Tiles using [NASA-AMMOS/3DTilesRendererJS](https://github.com/NASA-AMMOS/3DTilesRendererJS) library. (https://jeantimex.github.io/geospatial/tiles.html)
 
 ## Building for Production
 
@@ -69,6 +72,8 @@ The built files will be in the `dist` directory.
 
 - Atmosphere rendering based on the [@takram/three-atmosphere](https://github.com/takram-design-engineering/takram-atmosphere) library
 - Earth texture assets from [NASA Visible Earth](https://visibleearth.nasa.gov/)
+- 3D tiles rendering from [NASA-AMMOS/3DTilesRendererJS](https://github.com/NASA-AMMOS/3DTilesRendererJS) library
+- [Google Photorealistic Tiles API](https://developers.google.com/maps/documentation/tile/3d-tiles)
 
 ## License
 
