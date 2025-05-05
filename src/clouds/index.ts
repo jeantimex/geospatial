@@ -52,7 +52,6 @@ import {
 import {
   DitheringEffect,
   LensFlareEffect,
-  NormalEffect
 } from '@takram/three-geospatial-effects'
 
 let renderer: WebGLRenderer;
@@ -144,7 +143,6 @@ function init(): void {
   });
   composer.addPass(new RenderPass(scene, camera));
   composer.addPass(normalPass);
-  composer.addPass(new EffectPass(camera, new NormalEffect(camera)));
   composer.addPass(new EffectPass(camera, clouds, aerialPerspective));
   composer.addPass(
     new EffectPass(
