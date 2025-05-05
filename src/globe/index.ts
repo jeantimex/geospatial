@@ -1,4 +1,7 @@
-import { GlobeControls, TilesRenderer } from "3d-tiles-renderer";
+import {
+  GlobeControls,
+  TilesRenderer,
+} from "3d-tiles-renderer";
 import {
   TilesFadePlugin,
   UpdateOnChangePlugin,
@@ -8,8 +11,13 @@ import {
   GoogleCloudAuthPlugin,
 } from "3d-tiles-renderer/plugins";
 import { DRACOLoader } from "three-stdlib";
-import { Scene, PerspectiveCamera, WebGLRenderer } from "three";
+import {
+  PerspectiveCamera,
+  Scene,
+  WebGLRenderer,
+} from "three";
 import { TileCreasedNormalsPlugin } from "../plugins/TileCreasedNormalsPlugin";
+import { LasVegasSphere } from "./sphere";
 
 export class Globe {
   scene: Scene;
@@ -17,6 +25,7 @@ export class Globe {
   renderer: WebGLRenderer;
   tiles: TilesRenderer;
   controls: GlobeControls;
+  lasVegasSphere: LasVegasSphere;
 
   constructor(
     scene: Scene,
@@ -61,6 +70,8 @@ export class Globe {
       this.tiles
     );
     this.controls.enableDamping = true;
+
+    this.lasVegasSphere = new LasVegasSphere(this.scene, this.camera, this.tiles);
   }
 
   update(): void {
@@ -73,5 +84,6 @@ export class Globe {
     this.tiles.setCamera(this.camera);
 
     this.tiles.update();
+    this.lasVegasSphere.update();
   }
 }

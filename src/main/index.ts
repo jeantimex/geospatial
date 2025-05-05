@@ -58,7 +58,7 @@ const moonDirection = new Vector3();
 const rotationMatrix = new Matrix4();
 
 // Tokyo time 15:00PM
-const referenceDate = new Date("2025-01-01T15:00:00+09:00");
+const referenceDate = new Date("2025-01-01T16:00:00-08:00");
 
 function init(): void {
   // scene
@@ -66,7 +66,7 @@ function init(): void {
 
   // renderer
   renderer = new WebGLRenderer({
-    powerPreference: "high-performance",
+    // powerPreference: "high-performance",
     antialias: true,
     stencil: false,
     depth: false,
@@ -89,8 +89,8 @@ function init(): void {
   camera = new PerspectiveCamera(75, aspect, 10, 1e6);
 
   // --- New setup using geospatial coordinates ---
-  const longitude = 139.7671; // degrees (Tokyo)
-  const latitude = 35.6812; // degrees
+  const longitude = -115.16205; // degrees (Las Vegas Sphere)
+  const latitude = 36.12125; // degrees
   const heading = 180; // degrees
   const pitch = -10; // degrees
   const distance = 4500; // meters
@@ -199,6 +199,35 @@ function onWindowResize(): void {
   renderer.setSize(window.innerWidth, window.innerHeight);
 }
 
+let frameCount = 0;
+
+function logCameraPosition(): void {
+  // Get the camera's position in world space
+  const cameraPos = camera.position.clone();
+  
+  // Create a temporary vector to store the center of the view
+  const centerECEF = new Geodetic(
+    radians(globe.lasVegasSphere.longitude),
+    radians(globe.lasVegasSphere.latitude)
+  ).toECEF();
+  
+  // Calculate distance from camera to the Las Vegas Sphere
+  const distance = cameraPos.distanceTo(centerECEF);
+  
+  // Only log every 30 frames to avoid console spam
+  if (frameCount % 30 === 0) {
+    // Calculate approximate heading and pitch based on camera quaternion
+    // This is a simplified approach
+    const forward = new Vector3(0, 0, -1).applyQuaternion(camera.quaternion);
+    const pitch = Math.asin(-forward.y) * 180 / Math.PI;
+    const heading = Math.atan2(forward.x, forward.z) * 180 / Math.PI;
+    
+    console.log(`Camera Position: Looking at Las Vegas Sphere`);
+    console.log(`Distance: ${distance.toFixed(2)}m, Heading: ${heading.toFixed(2)}°, Pitch: ${pitch.toFixed(2)}°`);
+  }
+  frameCount++;
+}
+
 function render(): void {
   const date = referenceDate;
   getECIToECEFRotationMatrix(date, rotationMatrix);
@@ -212,6 +241,9 @@ function render(): void {
   aerialPerspective.moonDirection.copy(moonDirection);
 
   globe.update();
+
+  // Log camera position and orientation
+  logCameraPosition();
 
   // Update effect materials with current camera settings
   if (composer) {
