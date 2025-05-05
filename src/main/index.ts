@@ -57,7 +57,7 @@ const sunDirection = new Vector3();
 const moonDirection = new Vector3();
 const rotationMatrix = new Matrix4();
 
-// Tokyo time 15:00PM
+// Las Vegas time 15:00PM
 const referenceDate = new Date("2025-01-01T16:00:00-08:00");
 
 function init(): void {
