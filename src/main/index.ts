@@ -76,7 +76,7 @@ const moonDirection = new Vector3();
 const rotationMatrix = new Matrix4();
 
 // Tokyo time 15:00PM
-const referenceDate = new Date("2025-01-01T15:00:00+09:00");
+const referenceDate = new Date("2025-01-01T14:00:00+09:00");
 
 function init(): void {
   // scene
@@ -86,9 +86,6 @@ function init(): void {
   renderer = new WebGLRenderer({
     powerPreference: "high-performance",
     antialias: true,
-    stencil: false,
-    depth: true,
-    logarithmicDepthBuffer: false,
   });
   renderer.setPixelRatio(window.devicePixelRatio);
   renderer.setSize(window.innerWidth, window.innerHeight);
@@ -109,9 +106,9 @@ function init(): void {
   // --- New setup using geospatial coordinates ---
   const longitude = 139.7671; // degrees (Tokyo)
   const latitude = 35.6812; // degrees
-  const heading = 180; // degrees
-  const pitch = -10; // degrees
-  const distance = 4500; // meters
+  const heading = 210; // degrees
+  const pitch = -9; // degrees
+  const distance = 500; // meters
 
   // Calculate the center point on the globe in ECEF coordinates
   const centerECEF = new Geodetic(
@@ -163,7 +160,7 @@ function init(): void {
   });
 
   clouds = new CloudsEffect(camera);
-  clouds.coverage = 0.35;
+  clouds.coverage = 0.3;
   clouds.localWeatherVelocity.set(0.001, 0);
   clouds.shadow.farScale = 0.25;
   clouds.shadow.maxFar = 1e5;
