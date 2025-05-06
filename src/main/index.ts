@@ -87,8 +87,8 @@ function init(): void {
     powerPreference: "high-performance",
     antialias: true,
     stencil: false,
-    depth: false,
-    logarithmicDepthBuffer: true,
+    depth: true,
+    logarithmicDepthBuffer: false,
   });
   renderer.setPixelRatio(window.devicePixelRatio);
   renderer.setSize(window.innerWidth, window.innerHeight);
