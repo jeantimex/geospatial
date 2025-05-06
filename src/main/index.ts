@@ -14,6 +14,11 @@ import {
 import {
   HalfFloatType,
   NoToneMapping,
+  NoColorSpace,
+  LinearMipMapLinearFilter,
+  LinearFilter,
+  RepeatWrapping,
+  RedFormat,
   Mesh,
   PCFSoftShadowMap,
   PerspectiveCamera,
@@ -41,7 +46,19 @@ import {
   getSunDirectionECI,
   getECIToECEFRotationMatrix,
 } from "../utils/celestialDirections";
-import { Geodetic, PointOfView, radians } from "@takram/three-geospatial";
+import {
+  createData3DTextureLoaderClass,
+  Geodetic,
+  PointOfView,
+  parseUint8Array,
+  radians,
+  STBNLoader,
+} from "@takram/three-geospatial";
+import {
+  CLOUD_SHAPE_DETAIL_TEXTURE_SIZE,
+  CLOUD_SHAPE_TEXTURE_SIZE,
+  CloudsEffect,
+} from '@takram/three-clouds'
 
 let globe: Globe;
 let renderer: WebGLRenderer;
@@ -52,6 +69,7 @@ let aerialPerspective: AerialPerspectiveEffect;
 let composer: EffectComposer;
 let lutTexture: Texture;
 let lutEffect: LUT3DEffect;
+let clouds: CloudsEffect;
 
 const sunDirection = new Vector3();
 const moonDirection = new Vector3();
@@ -144,11 +162,43 @@ function init(): void {
     moon: true,
   });
 
+  clouds = new CloudsEffect(camera);
+  clouds.coverage = 0.35;
+  clouds.localWeatherVelocity.set(0.001, 0);
+  clouds.shadow.farScale = 0.25;
+  clouds.shadow.maxFar = 1e5;
+  clouds.shadow.cascadeCount = 2;
+  clouds.shadow.mapSize.set(1024, 1024);
+  clouds.shadow.splitMode = 'practical';
+  clouds.shadow.splitLambda = 0.71;
+
+  // Add event listener with proper type
+  clouds.events.addEventListener('change', (event) => {
+    if (event.property !== undefined) {
+      onCloudsChange(event.property);
+    }
+  });
+
   // Load precomputed textures.
   const basePath = import.meta.env.BASE_URL || "/";
   new PrecomputedTexturesLoader()
     .setTypeFromRenderer(renderer)
     .load(basePath + "assets/atmosphere", onPrecomputedTexturesLoad);
+
+  // Load textures for the clouds.
+  new TextureLoader().load(basePath + 'assets/clouds/local_weather.png', onLocalWeatherLoad);
+  new (createData3DTextureLoaderClass(parseUint8Array, {
+    width: CLOUD_SHAPE_TEXTURE_SIZE,
+    height: CLOUD_SHAPE_TEXTURE_SIZE,
+    depth: CLOUD_SHAPE_TEXTURE_SIZE
+  }))().load(basePath + 'assets/clouds/shape.bin', onShapeLoad);
+  new (createData3DTextureLoaderClass(parseUint8Array, {
+    width: CLOUD_SHAPE_DETAIL_TEXTURE_SIZE,
+    height: CLOUD_SHAPE_DETAIL_TEXTURE_SIZE,
+    depth: CLOUD_SHAPE_DETAIL_TEXTURE_SIZE
+  }))().load(basePath + 'assets/clouds/shape_detail.bin', onShapeDetailLoad);
+  new TextureLoader().load(basePath + 'assets/clouds/turbulence.png', onTurbulenceLoad);
+  new STBNLoader().load(basePath + 'assets/core/stbn.bin', onSTBNLoad);
 
   // --------------------------------
   //  Color Grading is not working
@@ -175,7 +225,7 @@ function init(): void {
 
   composer.addPass(new RenderPass(scene, camera));
   composer.addPass(normalPass);
-  composer.addPass(new EffectPass(camera, aerialPerspective));
+  composer.addPass(new EffectPass(camera, clouds, aerialPerspective));
   composer.addPass(new EffectPass(camera, new LensFlareEffect()));
   composer.addPass(
     new EffectPass(camera, new ToneMappingEffect({ mode: ToneMappingMode.AGX }))
@@ -186,9 +236,74 @@ function init(): void {
   window.addEventListener("resize", onWindowResize);
 }
 
+// Use a simpler approach with just the property name
+function onCloudsChange(property: string): void {
+  switch (property) {
+    case 'atmosphereOverlay':
+      aerialPerspective.overlay = clouds.atmosphereOverlay;
+      break;
+    case 'atmosphereShadow':
+      aerialPerspective.shadow = clouds.atmosphereShadow;
+      break;
+    case 'atmosphereShadowLength':
+      aerialPerspective.shadowLength = clouds.atmosphereShadowLength;
+      break;
+  }
+}
+
+function onLocalWeatherLoad(texture: Texture): void {
+  texture.minFilter = LinearMipMapLinearFilter;
+  texture.magFilter = LinearFilter;
+  texture.wrapS = RepeatWrapping;
+  texture.wrapT = RepeatWrapping;
+  texture.colorSpace = NoColorSpace;
+  texture.needsUpdate = true;
+  clouds.localWeatherTexture = texture;
+}
+
+function onShapeLoad(texture: any): void {
+  texture.format = RedFormat;
+  texture.minFilter = LinearFilter;
+  texture.magFilter = LinearFilter;
+  texture.wrapS = RepeatWrapping;
+  texture.wrapT = RepeatWrapping;
+  texture.wrapR = RepeatWrapping;
+  texture.colorSpace = NoColorSpace;
+  texture.needsUpdate = true;
+  clouds.shapeTexture = texture;
+}
+
+function onShapeDetailLoad(texture: any): void {
+  texture.format = RedFormat;
+  texture.minFilter = LinearFilter;
+  texture.magFilter = LinearFilter;
+  texture.wrapS = RepeatWrapping;
+  texture.wrapT = RepeatWrapping;
+  texture.wrapR = RepeatWrapping;
+  texture.colorSpace = NoColorSpace;
+  texture.needsUpdate = true;
+  clouds.shapeDetailTexture = texture;
+}
+
+function onTurbulenceLoad(texture: Texture): void {
+  texture.minFilter = LinearMipMapLinearFilter;
+  texture.magFilter = LinearFilter;
+  texture.wrapS = RepeatWrapping;
+  texture.wrapT = RepeatWrapping;
+  texture.colorSpace = NoColorSpace;
+  texture.needsUpdate = true;
+  clouds.turbulenceTexture = texture;
+}
+
+function onSTBNLoad(texture: any): void {
+  aerialPerspective.stbnTexture = texture;
+  clouds.stbnTexture = texture;
+}
+
 function onPrecomputedTexturesLoad(textures: any): void {
   Object.assign(skyMaterial, textures);
   Object.assign(aerialPerspective, textures);
+  Object.assign(clouds, textures);
 
   renderer.setAnimationLoop(render);
 }
@@ -210,6 +325,8 @@ function render(): void {
 
   aerialPerspective.sunDirection.copy(sunDirection);
   aerialPerspective.moonDirection.copy(moonDirection);
+
+  clouds.sunDirection.copy(sunDirection);
 
   globe.update();
 
