@@ -30,6 +30,7 @@ This demo showcases a realistic Earth atmosphere effect using the `@takram/three
 
 - Node.js (v16 or higher recommended)
 - npm or yarn
+- Google Maps JavaScript API key (for Tiles demo)
 
 ### Installation
 
@@ -44,12 +45,20 @@ This demo showcases a realistic Earth atmosphere effect using the `@takram/three
    npm install
    ```
 
-3. Start the development server:
+3. Create a `.env` file in the root directory with the following content:
+   ```
+   VITE_GOOGLE_MAPS_JS_API_KEY=your_google_maps_api_key_here
+   ```
+   Replace `your_google_maps_api_key_here` with your actual Google Maps JavaScript API key.
+   
+   **Important:** Make sure to enable both the **Maps JavaScript API** and **Map Tiles API** for your API key in the Google Cloud Console.
+
+4. Start the development server:
    ```bash
    npm run dev
    ```
 
-4. Open your browser and navigate to the URL shown in the terminal (typically http://localhost:5173).
+5. Open your browser and navigate to the URL shown in the terminal (typically http://localhost:5173).
 
 ## Available Demos
 
