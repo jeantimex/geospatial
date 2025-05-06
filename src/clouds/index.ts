@@ -1,12 +1,13 @@
 import '../styles.css'; // Import the CSS file
 
 import {
+  EffectMaterial,
   EffectComposer,
   EffectPass,
   NormalPass,
   RenderPass,
   ToneMappingEffect,
-  ToneMappingMode
+  ToneMappingMode,
 } from 'postprocessing'
 import {
   Group,
@@ -111,7 +112,8 @@ function init(): void {
   aerialPerspective.normalBuffer = normalPass.texture;
 
   clouds = new CloudsEffect(camera);
-  clouds.coverage = 0.4;
+  clouds.coverage = 0.3;
+  clouds.qualityPreset = 'high';
   clouds.localWeatherVelocity.set(0.001, 0);
 
   // Add event listener with proper type
@@ -255,7 +257,10 @@ function onWindowResize(): void {
 
 function render(): void {
   controls.update();
-  composer.render();
+  
+  if (composer != null) {
+    composer.render();
+  }
 }
 
 window.addEventListener('load', init);

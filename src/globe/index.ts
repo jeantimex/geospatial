@@ -70,12 +70,15 @@ export class Globe {
       this.tiles
     );
     this.controls.enableDamping = true;
+    // this.controls.adjustHeight = false;
+    this.controls.maxAltitude = Math.PI * 0.55;
 
     this.lasVegasSphere = new LasVegasSphere(this.scene, this.camera, this.tiles);
   }
 
   update(): void {
     this.controls.enabled = true;
+    // this.controls.adjustHeight = false;
     this.controls.update();
 
     // update options
