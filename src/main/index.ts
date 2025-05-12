@@ -76,7 +76,7 @@ const moonDirection = new Vector3();
 const rotationMatrix = new Matrix4();
 
 // Tokyo time 9:00AM
-const referenceDate = new Date("2025-01-01T09:00:00+09:00");
+const referenceDate = new Date("2024-03-01T09:00:00+09:00");
 
 function init(): void {
   // scene
