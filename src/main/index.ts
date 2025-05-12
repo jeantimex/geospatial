@@ -111,7 +111,7 @@ function init(): void {
   const latitude = 35.6812; // degrees
   const heading = 180; // degrees
   const pitch = -10; // degrees
-  const distance = 2000; // meters
+  const distance = 3000; // meters
 
   // Calculate the center point on the globe in ECEF coordinates
   const centerECEF = new Geodetic(
@@ -141,7 +141,7 @@ function init(): void {
   sky.frustumCulled = false;
   scene.add(sky);
 
-  globe = new Globe(scene, camera, renderer);
+  globe = new Globe(scene, camera, renderer, /* disableControls= */ true);
   scene.add(globe.tiles.group);
 
   // Demonstrates forward lighting here. For deferred lighting, set

@@ -22,7 +22,8 @@ export class Globe {
   constructor(
     scene: Scene,
     camera: PerspectiveCamera,
-    renderer: WebGLRenderer
+    renderer: WebGLRenderer,
+    disableControls: boolean = false
   ) {
     this.scene = scene;
     this.camera = camera;
@@ -62,38 +63,40 @@ export class Globe {
       this.tiles
     );
     this.controls.enableDamping = true;
-    this.controls.enabled = false; // Start with controls disabled
+    this.controls.enabled = !disableControls;
 
-    const activateControlsAndRedispatch = (event: PointerEvent | WheelEvent) => {
-      // If controls have already been activated by a different event type
-      // (e.g., pointerdown activated, and now the wheel listener fires),
-      // this flag will be true. In this case, we do nothing here, as the
-      // GlobeControls are already enabled and should pick up the original event.
-      if (this._initialInteractionPerformed) {
-        return;
-      }
+    if (disableControls) {
+      const activateControlsAndRedispatch = (event: PointerEvent | WheelEvent) => {
+        // If controls have already been activated by a different event type
+        // (e.g., pointerdown activated, and now the wheel listener fires),
+        // this flag will be true. In this case, we do nothing here, as the
+        // GlobeControls are already enabled and should pick up the original event.
+        if (this._initialInteractionPerformed) {
+          return;
+        }
 
-      this.controls.enabled = true;
-      this._initialInteractionPerformed = true; // Set flag after enabling controls
+        this.controls.enabled = true;
+        this._initialInteractionPerformed = true; // Set flag after enabling controls
 
-      let newEventToRedispatch;
-      if (event instanceof PointerEvent) {
-        newEventToRedispatch = new PointerEvent(event.type, event);
-      } else if (event instanceof WheelEvent) {
-        newEventToRedispatch = new WheelEvent(event.type, event);
-      } else {
-        // Should not happen with correctly typed event listeners
-        console.warn('Globe: Unknown event type for control activation:', event);
-        return;
-      }
-      
-      this.renderer.domElement.dispatchEvent(newEventToRedispatch);
-      console.log(`Globe controls enabled; ${event.type} event re-dispatched.`);
-    };
+        let newEventToRedispatch;
+        if (event instanceof PointerEvent) {
+          newEventToRedispatch = new PointerEvent(event.type, event);
+        } else if (event instanceof WheelEvent) {
+          newEventToRedispatch = new WheelEvent(event.type, event);
+        } else {
+          // Should not happen with correctly typed event listeners
+          console.warn('Globe: Unknown event type for control activation:', event);
+          return;
+        }
+        
+        this.renderer.domElement.dispatchEvent(newEventToRedispatch);
+        console.log(`Globe controls enabled; ${event.type} event re-dispatched.`);
+      };
 
-    // Add one-time listeners for pointerdown and wheel events
-    this.renderer.domElement.addEventListener('pointerdown', activateControlsAndRedispatch as EventListener, { once: true });
-    this.renderer.domElement.addEventListener('wheel', activateControlsAndRedispatch as EventListener, { once: true });
+      // Add one-time listeners for pointerdown and wheel events
+      this.renderer.domElement.addEventListener('pointerdown', activateControlsAndRedispatch as EventListener, { once: true });
+      this.renderer.domElement.addEventListener('wheel', activateControlsAndRedispatch as EventListener, { once: true });
+    }
   }
 
   update(): void {
