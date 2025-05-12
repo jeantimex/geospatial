@@ -168,7 +168,7 @@ function init(): void {
   clouds.shadow.farScale = 0.25;
   clouds.shadow.maxFar = 1e5;
   clouds.shadow.cascadeCount = 2;
-  clouds.shadow.mapSize.set(1024, 1024);
+  clouds.shadow.mapSize.set(512, 512);
   clouds.shadow.splitMode = 'practical';
   clouds.shadow.splitLambda = 0.71;
 
