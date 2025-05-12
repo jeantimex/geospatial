@@ -47,7 +47,7 @@ export class Globe {
     this.tiles.registerPlugin(new TilesFadePlugin());
     this.tiles.registerPlugin(
       new TileCreasedNormalsPlugin({
-        creaseAngle: 30,
+        creaseAngle: 45,
       })
     );
 
