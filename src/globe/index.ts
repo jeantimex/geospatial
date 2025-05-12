@@ -17,6 +17,7 @@ export class Globe {
   renderer: WebGLRenderer;
   tiles: TilesRenderer;
   controls: GlobeControls;
+  private _initialInteractionPerformed: boolean = false;
 
   constructor(
     scene: Scene,
@@ -61,13 +62,43 @@ export class Globe {
       this.tiles
     );
     this.controls.enableDamping = true;
+    this.controls.enabled = false; // Start with controls disabled
+
+    const activateControlsAndRedispatch = (event: PointerEvent | WheelEvent) => {
+      // If controls have already been activated by a different event type
+      // (e.g., pointerdown activated, and now the wheel listener fires),
+      // this flag will be true. In this case, we do nothing here, as the
+      // GlobeControls are already enabled and should pick up the original event.
+      if (this._initialInteractionPerformed) {
+        return;
+      }
+
+      this.controls.enabled = true;
+      this._initialInteractionPerformed = true; // Set flag after enabling controls
+
+      let newEventToRedispatch;
+      if (event instanceof PointerEvent) {
+        newEventToRedispatch = new PointerEvent(event.type, event);
+      } else if (event instanceof WheelEvent) {
+        newEventToRedispatch = new WheelEvent(event.type, event);
+      } else {
+        // Should not happen with correctly typed event listeners
+        console.warn('Globe: Unknown event type for control activation:', event);
+        return;
+      }
+      
+      this.renderer.domElement.dispatchEvent(newEventToRedispatch);
+      console.log(`Globe controls enabled; ${event.type} event re-dispatched.`);
+    };
+
+    // Add one-time listeners for pointerdown and wheel events
+    this.renderer.domElement.addEventListener('pointerdown', activateControlsAndRedispatch as EventListener, { once: true });
+    this.renderer.domElement.addEventListener('wheel', activateControlsAndRedispatch as EventListener, { once: true });
   }
 
   update(): void {
-    this.controls.enabled = true;
     this.controls.update();
 
-    // update options
     this.camera.updateMatrixWorld();
     this.tiles.setResolutionFromRenderer(this.camera, this.renderer);
     this.tiles.setCamera(this.camera);
