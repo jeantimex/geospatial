@@ -12,24 +12,30 @@ import {
   LUT3DEffect,
 } from "postprocessing";
 import {
+  AmbientLight,
+  Clock,
+  DirectionalLight,
+  PerspectiveCamera,
+  Scene,
+  WebGLRenderer,
+  LinearFilter,
+  LinearMipMapLinearFilter,
+  RepeatWrapping,
+  Texture,
+  SphereGeometry,
+  MeshBasicMaterial,
+  Mesh,
   HalfFloatType,
   NoToneMapping,
   NoColorSpace,
-  LinearMipMapLinearFilter,
-  LinearFilter,
-  RepeatWrapping,
   RedFormat,
-  Mesh,
-  PCFSoftShadowMap,
-  PerspectiveCamera,
   PlaneGeometry,
-  Scene,
   Vector3,
   Matrix4,
-  WebGLRenderer,
   TextureLoader,
-  Texture,
+  PCFSoftShadowMap,
 } from "three";
+import * as THREE from "three";
 import { Globe } from "../globe";
 import {
   AerialPerspectiveEffect,
@@ -59,6 +65,7 @@ import {
   CLOUD_SHAPE_TEXTURE_SIZE,
   CloudsEffect,
 } from '@takram/three-clouds'
+import { createRiverMesh } from '../river'; // Import the new function
 
 let globe: Globe;
 let renderer: WebGLRenderer;
@@ -232,6 +239,30 @@ function init(): void {
   );
   composer.addPass(new EffectPass(camera, new SMAAEffect()));
   composer.addPass(new EffectPass(camera, new DitheringEffect()));
+
+  // Add a test sphere directly to the scene (should be visible in front of the camera)
+  const testSphereGeometry = new THREE.SphereGeometry(0.1, 32, 32);
+  const testSphereMaterial = new THREE.MeshBasicMaterial({ color: 0xff00ff }); // Bright magenta
+  const testSphere = new THREE.Mesh(testSphereGeometry, testSphereMaterial);
+  
+  // Position it in front of the camera
+  testSphere.position.set(0, 0, -2); // 2 units in front of the camera
+  testSphere.name = "TestSphere";
+  scene.add(testSphere);
+  console.log("Test sphere added to scene at:", testSphere.position);
+  
+  // Add River Thames
+  createRiverMesh(basePath + 'assets/geojson/river_thames.geojson', globe)
+    .then(riverMesh => {
+      if (riverMesh) {
+        scene.add(riverMesh);
+        console.log(riverMesh);
+        console.log('River Thames added to scene');
+      }
+    })
+    .catch(error => {
+      console.error('Failed to add River Thames:', error);
+    });
 
   window.addEventListener("resize", onWindowResize);
 }
