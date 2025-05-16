@@ -66,7 +66,9 @@ export class Globe {
     this.controls.enabled = !disableControls;
 
     if (disableControls) {
-      const activateControlsAndRedispatch = (event: PointerEvent | WheelEvent) => {
+      const activateControlsAndRedispatch = (
+        event: PointerEvent | WheelEvent
+      ) => {
         // If controls have already been activated by a different event type
         // (e.g., pointerdown activated, and now the wheel listener fires),
         // this flag will be true. In this case, we do nothing here, as the
@@ -85,17 +87,30 @@ export class Globe {
           newEventToRedispatch = new WheelEvent(event.type, event);
         } else {
           // Should not happen with correctly typed event listeners
-          console.warn('Globe: Unknown event type for control activation:', event);
+          console.warn(
+            "Globe: Unknown event type for control activation:",
+            event
+          );
           return;
         }
-        
+
         this.renderer.domElement.dispatchEvent(newEventToRedispatch);
-        console.log(`Globe controls enabled; ${event.type} event re-dispatched.`);
+        console.log(
+          `Globe controls enabled; ${event.type} event re-dispatched.`
+        );
       };
 
       // Add one-time listeners for pointerdown and wheel events
-      this.renderer.domElement.addEventListener('pointerdown', activateControlsAndRedispatch as EventListener, { once: true });
-      this.renderer.domElement.addEventListener('wheel', activateControlsAndRedispatch as EventListener, { once: true });
+      this.renderer.domElement.addEventListener(
+        "pointerdown",
+        activateControlsAndRedispatch as EventListener,
+        { once: true }
+      );
+      this.renderer.domElement.addEventListener(
+        "wheel",
+        activateControlsAndRedispatch as EventListener,
+        { once: true }
+      );
     }
   }
 
@@ -107,5 +122,19 @@ export class Globe {
     this.tiles.setCamera(this.camera);
 
     this.tiles.update();
+
+    this.updateAttributions();
+  }
+
+  updateAttributions(): void {
+    const attributions = this.tiles.getAttributions()[0]?.value || "";
+    const creditsElement = document.getElementById("credits");
+    if (creditsElement) {
+      creditsElement.innerText = attributions;
+    } else {
+      console.warn(
+        'Credits element not found in the DOM. Make sure an element with id="credits" exists.'
+      );
+    }
   }
 }
