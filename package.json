@@ -19,12 +19,12 @@
   },
   "dependencies": {
     "@here/quantized-mesh-decoder": "^1.2.8",
-    "@takram/three-atmosphere": "^0.11.1",
-    "@takram/three-clouds": "^0.2.1",
-    "@takram/three-geospatial": "^0.2.0",
-    "@takram/three-geospatial-effects": "^0.3.0",
+    "@takram/three-atmosphere": "^0.12.0",
+    "@takram/three-clouds": "^0.3.0",
+    "@takram/three-geospatial": "^0.2.2",
+    "@takram/three-geospatial-effects": "^0.3.2",
     "3d-tiles-renderer": "^0.4.8",
-    "postprocessing": "^6.37.2",
+    "postprocessing": "^6.37.4",
     "three": "^0.175.0",
     "three-stdlib": "^2.36.0",
     "workerpool": "^9.2.0"
