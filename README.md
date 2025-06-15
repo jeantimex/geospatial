@@ -42,7 +42,7 @@ This demo showcases a realistic Earth atmosphere effect using the `@takram/three
 
 2. Install dependencies:
    ```bash
-   npm install
+   npm install --legacy-peer-deps
    ```
 
 3. Create a `.env` file in the root directory with the following content:
