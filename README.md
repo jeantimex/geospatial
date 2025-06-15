@@ -11,7 +11,7 @@ This demo showcases a realistic Earth atmosphere effect using the `@takram/three
 - Atmospheric perspective effects
 - Interactive camera controls
 
-<img width="1120" alt="Screenshot 2025-04-30 at 10 09 09 PM" src="https://github.com/user-attachments/assets/5a3f473e-b9f6-4721-ab08-5b5a0335f4b6" />
+https://github.com/user-attachments/assets/9526c361-c41a-4e6e-add7-05bf9ebd9613
 
 [Atmosphere Demo Preview](https://jeantimex.github.io/geospatial/)
 
