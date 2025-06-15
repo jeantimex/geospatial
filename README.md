@@ -15,15 +15,6 @@ This demo showcases a realistic Earth atmosphere effect using the `@takram/three
 
 [Atmosphere Demo Preview](https://jeantimex.github.io/geospatial/)
 
-## Technologies Used
-
-- Three.js (v0.175.0)
-- @takram/three-atmosphere (v0.11.1)
-- @takram/three-geospatial (v0.2.0)
-- @takram/three-geospatial-effects (v0.3.0)
-- Postprocessing (v6.36.7)
-- Vite (for development and building)
-
 ## Getting Started
 
 ### Prerequisites
@@ -35,25 +26,32 @@ This demo showcases a realistic Earth atmosphere effect using the `@takram/three
 ### Installation
 
 1. Clone the repository:
+
    ```bash
    git clone https://github.com/jeantimex/geospatial.git
    cd geospatial
    ```
 
 2. Install dependencies:
+
    ```bash
    npm install --legacy-peer-deps
    ```
 
+   **Note:** The `--legacy-peer-deps` flag is required due to peer dependency conflicts between packages. Specifically, `3d-tiles-renderer` requires React 18, while other dependencies (like `expo` pulled in by `@react-three/fiber`) expect React 19. This flag tells npm to use the older, more permissive dependency resolution algorithm to handle these version conflicts.
+
 3. Create a `.env` file in the root directory with the following content:
+
    ```
    VITE_GOOGLE_MAPS_JS_API_KEY=your_google_maps_api_key_here
    ```
+
    Replace `your_google_maps_api_key_here` with your actual Google Maps JavaScript API key.
-   
+
    **Important:** Make sure to enable both the **Maps JavaScript API** and **Map Tiles API** for your API key in the Google Cloud Console.
 
 4. Start the development server:
+
    ```bash
    npm run dev
    ```
@@ -62,10 +60,10 @@ This demo showcases a realistic Earth atmosphere effect using the `@takram/three
 
 ## Available Demos
 
-- **Atmosphere**: A realistic Earth atmosphere visualization (https://jeantimex.github.io/geospatial/atmosphere.html). This is based on @takram/three-geospatial's Atmosphere Vanilla demo: https://takram-design-engineering.github.io/three-geospatial/?path=/story/atmosphere-atmosphere--vanilla.
-- **Clouds**: Simulate the clouds visualization (https://jeantimex.github.io/geospatial/clouds.html). This is based on @takram/three-geospatial's Clouds Vanilla demo.
-- **Deferred Lighting**: Use deferred lighting technique to render the atmosphere and a simple Three.JS torus knot object. (https://jeantimex.github.io/geospatial/deferred-lighting.html)
-- **Tiles**: The vanilla implementation of rendering Google Photorealistic Tiles using [NASA-AMMOS/3DTilesRendererJS](https://github.com/NASA-AMMOS/3DTilesRendererJS) library. (https://jeantimex.github.io/geospatial/tiles.html)
+- **[Atmosphere](https://jeantimex.github.io/geospatial/atmosphere.html)**: A realistic Earth atmosphere visualization. This is based on @takram/three-geospatial's [Atmosphere Vanilla demo](https://takram-design-engineering.github.io/three-geospatial/?path=/story/atmosphere-atmosphere--vanilla).
+- **[Clouds](https://jeantimex.github.io/geospatial/clouds.html)**: Simulate the clouds visualization. This is based on @takram/three-geospatial's [Clouds Vanilla demo](https://takram-design-engineering.github.io/three-geospatial/?path=/story/clouds-clouds--vanilla).
+- **[Deferred Lighting](https://jeantimex.github.io/geospatial/deferred-lighting.html)**: Use deferred lighting technique to render the atmosphere and a simple Three.JS torus knot object.
+- **[Tiles](https://jeantimex.github.io/geospatial/tiles.html)**: The vanilla implementation of rendering Google Photorealistic Tiles using [NASA-AMMOS/3DTilesRendererJS](https://github.com/NASA-AMMOS/3DTilesRendererJS) library.
 
 ## Building for Production
 
