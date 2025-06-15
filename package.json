@@ -12,7 +12,7 @@
   },
   "devDependencies": {
     "@types/stats.js": "^0.17.3",
-    "@types/three": "^0.176.0",
+    "@types/three": "^0.177.0",
     "gh-pages": "^6.3.0",
     "typescript": "^5.8.3",
     "vite": "^6.3.1"
@@ -23,10 +23,10 @@
     "@takram/three-clouds": "^0.3.0",
     "@takram/three-geospatial": "^0.2.2",
     "@takram/three-geospatial-effects": "^0.3.2",
-    "3d-tiles-renderer": "^0.4.8",
+    "3d-tiles-renderer": "^0.4.10",
     "postprocessing": "^6.37.4",
-    "three": "^0.175.0",
+    "three": "^0.177.0",
     "three-stdlib": "^2.36.0",
-    "workerpool": "^9.2.0"
+    "workerpool": "^9.3.2"
   }
 }

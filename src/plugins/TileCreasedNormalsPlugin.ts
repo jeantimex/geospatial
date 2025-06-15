@@ -1,51 +1,52 @@
-import { type Tile } from '3d-tiles-renderer'
-import { BufferGeometry, Mesh, type Object3D } from 'three'
+import { type Tile } from "3d-tiles-renderer";
+import { BufferGeometry, Mesh, type Object3D } from "three";
 
 import {
   fromBufferGeometryLike,
-  toBufferGeometryLike
-} from '@takram/three-geospatial'
-import { queueTask } from '../worker';
+  toBufferGeometryLike,
+} from "@takram/three-geospatial";
+
+import { queueTask } from "../worker/pool";
 
 async function toCreasedNormalsAsync(
   geometry: BufferGeometry,
   creaseAngle?: number
 ): Promise<BufferGeometry> {
-  const [geometryLike, transfer] = toBufferGeometryLike(geometry)
+  const [geometryLike, transfer] = toBufferGeometryLike(geometry);
   const result = await queueTask(
-    'toCreasedNormals',
+    "toCreasedNormals",
     [geometryLike, creaseAngle],
     { transfer }
-  )
-  return fromBufferGeometryLike(result, geometry)
+  );
+  return fromBufferGeometryLike(result, geometry);
 }
 
 export interface TileCreasedNormalsPluginOptions {
-  creaseAngle?: number
+  creaseAngle?: number;
 }
 
 export class TileCreasedNormalsPlugin {
-  readonly options: TileCreasedNormalsPluginOptions
+  readonly options: TileCreasedNormalsPluginOptions;
 
   constructor(options?: TileCreasedNormalsPluginOptions) {
-    this.options = { ...options }
+    this.options = { ...options };
   }
 
   // Plugin method
   async processTileModel(scene: Object3D, tile: Tile): Promise<void> {
-    const meshes: Array<Mesh<BufferGeometry>> = []
-    scene.traverse(object => {
+    const meshes: Array<Mesh<BufferGeometry>> = [];
+    scene.traverse((object) => {
       if (object instanceof Mesh && object.geometry instanceof BufferGeometry) {
-        meshes.push(object)
+        meshes.push(object);
       }
-    })
+    });
     await Promise.all(
-      meshes.map(async mesh => {
+      meshes.map(async (mesh) => {
         mesh.geometry = await toCreasedNormalsAsync(
           mesh.geometry,
           this.options.creaseAngle
-        )
+        );
       })
-    )
+    );
   }
 }
